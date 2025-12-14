@@ -3,6 +3,23 @@
 Tableau::Tableau() : Tableau({ 0, 0 }) {}
 Tableau::Tableau(sf::Vector2f pos) : Pile(pos, 25.0f) {}  // Маленький отступ
 
+Tableau::Tableau(const Tableau& other) : Pile(other) {}
+
+// Оператор присваивания копированием
+Tableau& Tableau::operator=(const Tableau& other) {
+    Pile::operator=(other);
+    return *this;
+}
+
+// Конструктор перемещения
+Tableau::Tableau(Tableau&& other) noexcept : Pile(std::move(other)) {}
+
+// Оператор присваивания перемещением
+Tableau& Tableau::operator=(Tableau&& other) noexcept {
+    Pile::operator=(std::move(other));
+    return *this;
+}
+
 bool Tableau::canAddCard(const Card& card) const {
     if (cards.empty()) {
         // В пустую Tableau можно положить только короля

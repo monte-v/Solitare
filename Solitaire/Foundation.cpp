@@ -5,6 +5,36 @@ Foundation::Foundation(Suit s, sf::Vector2f pos)
     : Pile(pos, 0.0f), suit(s) {
 }  // Карты лежат вплотную
 
+
+// Конструктор копирования
+Foundation::Foundation(const Foundation& other)
+    : Pile(other), suit(other.suit) {
+}
+
+// Оператор присваивания копированием
+Foundation& Foundation::operator=(const Foundation& other) {
+    if (this != &other) {
+        Pile::operator=(other);
+        suit = other.suit;
+    }
+    return *this;
+}
+
+// Конструктор перемещения
+Foundation::Foundation(Foundation&& other) noexcept
+    : Pile(std::move(other)), suit(std::move(other.suit)) {
+}
+
+// Оператор присваивания перемещением
+Foundation& Foundation::operator=(Foundation&& other) noexcept {
+    if (this != &other) {
+        Pile::operator=(std::move(other));
+        suit = std::move(other.suit);
+    }
+    return *this;
+}
+
+
 bool Foundation::canAddCard(const Card& card) const {
     // 1. Проверяем масть
     if (card.getSuit() != suit) {

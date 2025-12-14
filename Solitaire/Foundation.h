@@ -10,6 +10,14 @@ public:
     Foundation();
     Foundation(Suit s, sf::Vector2f pos);
 
+    // Перемещающие операции
+    Foundation(Foundation&& other) noexcept;
+    Foundation& operator=(Foundation&& other) noexcept;
+
+    // Копирующие операции
+    Foundation(const Foundation& other);
+    Foundation& operator=(const Foundation& other);
+
     // Правила Foundation
     bool canAddCard(const Card& card) const override;
     bool canTakeCardFrom(int index) const override { return false; }

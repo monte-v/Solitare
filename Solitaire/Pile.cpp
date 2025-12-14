@@ -1,8 +1,92 @@
 #include "Pile.h"
 #include <algorithm>
+std::shared_ptr<sf::Texture> Pile::emptyPileTexture = nullptr;
 
 Pile::Pile(sf::Vector2f pos, float vSpacing, float hSpacing) : position(pos), verticalSpacing(vSpacing),
-horizontalSpacing(hSpacing) {
+horizontalSpacing(hSpacing), emptyPileSprite(nullptr) {
+}
+
+Pile::Pile(Pile&& other) noexcept
+    : cards(std::move(other.cards)),
+    position(std::move(other.position)),
+    verticalSpacing(std::move(other.verticalSpacing)),
+    horizontalSpacing(std::move(other.horizontalSpacing)),
+    emptyPileSprite(std::move(other.emptyPileSprite))
+{
+    // other теперь в валидном, но пустом состоянии
+}
+
+// Оператор присваивания перемещением
+Pile& Pile::operator=(Pile&& other) noexcept {
+    if (this != &other) {
+        cards = std::move(other.cards);
+        position = std::move(other.position);
+        verticalSpacing = std::move(other.verticalSpacing);
+        horizontalSpacing = std::move(other.horizontalSpacing);
+        emptyPileSprite = std::move(other.emptyPileSprite);
+    }
+    return *this;
+}
+
+// Конструктор копирования (глубокое копирование)
+Pile::Pile(const Pile& other)
+    : cards(other.cards),  // Card должен иметь корректный конструктор копирования
+    position(other.position),
+    verticalSpacing(other.verticalSpacing),
+    horizontalSpacing(other.horizontalSpacing),
+    emptyPileSprite(nullptr)  // Спрайт не копируем, создадим при необходимости
+{
+    // Карты копируются, спрайт будет создан лениво
+}
+
+// Оператор присваивания копированием
+Pile& Pile::operator=(const Pile& other) {
+    if (this != &other) {
+        cards = other.cards;
+        position = other.position;
+        verticalSpacing = other.verticalSpacing;
+        horizontalSpacing = other.horizontalSpacing;
+
+        // Сбрасываем спрайт - будет создан при необходимости
+        emptyPileSprite.reset();
+    }
+    return *this;
+}
+
+bool Pile::loadEmptyPileTexture(const std::string& path)
+{
+    if (emptyPileTexture) {
+        return true; // Уже загружена
+    }
+
+    emptyPileTexture = std::make_shared<sf::Texture>();
+    if (emptyPileTexture->loadFromFile(path)) {
+        std::cout << "Текстура пустой стопки загружена: " << path << std::endl;
+        return true;
+    }
+    else {
+        std::cerr << "Ошибка загрузки текстуры пустой стопки: " << path << std::endl;
+        emptyPileTexture.reset();
+        return false;
+    }
+}
+
+void Pile::initEmptyPileSprite() {
+    if (!emptyPileSprite && emptyPileTexture) {
+        // Создаем спрайт только при необходимости
+        emptyPileSprite = std::make_unique<sf::Sprite>(*emptyPileTexture);
+
+        // Масштабируем под размер карты
+        sf::Vector2u texSize = emptyPileTexture->getSize();
+        if (texSize.x > 0 && texSize.y > 0) {
+            emptyPileSprite->setScale(sf::Vector2f(
+                static_cast<float>(Card::WIDTH) / texSize.x,
+                static_cast<float>(Card::HEIGHT) / texSize.y
+            ));
+        }
+
+        emptyPileSprite->setPosition(position);
+    }
 }
 
 void Pile::output() const {
@@ -100,15 +184,33 @@ int Pile::getCardIndexAt(sf::Vector2f point) const {
 
 // Проверка попадания в границы стопки
 bool Pile::contains(sf::Vector2f point) const {
+    //if (cards.empty()) {
+    //    // Для пустой стопки проверяем попадание в область
+    //    sf::FloatRect bounds(sf::Vector2f(position.x, position.y),
+    //        sf::Vector2f(Card::WIDTH, Card::HEIGHT));
+    //    return bounds.contains(point);
+    //}
+
+    //// Для непустой - проверяем попадание в верхнюю карту
+    //return cards.back().contains(point);
     if (cards.empty()) {
-        // Для пустой стопки проверяем попадание в область
-        sf::FloatRect bounds(sf::Vector2f(position.x, position.y),
+        // Для пустой стопки
+        if (emptyPileTexture) {
+            const_cast<Pile*>(this)->initEmptyPileSprite();
+            if (emptyPileSprite) {
+                return emptyPileSprite->getGlobalBounds().contains(point);
+            }
+        }
+
+        // Если нет текстуры, проверяем стандартную область
+        sf::FloatRect bounds(position,
             sf::Vector2f(Card::WIDTH, Card::HEIGHT));
         return bounds.contains(point);
     }
 
     // Для непустой - проверяем попадание в верхнюю карту
     return cards.back().contains(point);
+
 }
 
 // Открыть верхнюю карту
@@ -120,6 +222,15 @@ void Pile::revealTopCard() {
 }
 
 void Pile::draw(sf::RenderTarget& target) const {
+    if (cards.empty() && emptyPileTexture) {
+        // Ленивая инициализация спрайта
+        const_cast<Pile*>(this)->initEmptyPileSprite();
+
+        if (emptyPileSprite) {
+            target.draw(*emptyPileSprite);
+        }
+    }
+
     for (const auto& card : cards) {
         // Предполагая, что Card имеет метод draw
         card.draw(target);

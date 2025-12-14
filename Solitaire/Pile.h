@@ -9,10 +9,24 @@ protected:
     sf::Vector2f position;
     float verticalSpacing;  // Расстояние между картами по вертикали
     float horizontalSpacing; // Для waste режима (по горизонтали)
+    
+    static std::shared_ptr<sf::Texture> emptyPileTexture;
+    std::unique_ptr<sf::Sprite> emptyPileSprite;
 
 public:
     Pile(sf::Vector2f pos, float vSpacing = 25.0f, float hSpacing = 10.0f);
+
+    // Нужно добавить перемещающие операции
+    Pile(Pile&& other) noexcept;  // Конструктор перемещения
+    Pile& operator=(Pile&& other) noexcept;  // Оператор присваивания перемещением
+
+    // Если нужны копирования (для массива Foundation в Game)
+    Pile(const Pile& other);  // Конструктор копирования
+    Pile& operator=(const Pile& other);  // Оператор присваивания копированием
+
     virtual ~Pile() = default;
+
+    static bool loadEmptyPileTexture(const std::string& path);
 
     void output() const;
 
@@ -40,6 +54,7 @@ public:
     //void setPosition(sf::Vector2f pos) { position = pos; updateCardPositions(); }
     //sf::Vector2f getPosition() const { return position; }
 
+
     //// Позиционирование карт
     sf::Vector2f getCardPosition(int index) const;
     //void updateCardPositions();
@@ -56,5 +71,6 @@ public:
     virtual void draw(sf::RenderTarget& target) const;
 
 protected:
+    void initEmptyPileSprite();
     //virtual void updateLayout();  // Для кастомизации расположения
 };

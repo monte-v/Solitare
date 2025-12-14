@@ -45,7 +45,9 @@ bool Solitaire::loadResources() {
         std::cerr << "ѕредупреждение: рубашка не загружена" << std::endl;
         // ћожно продолжить, но карты будут без текстур
     }
-
+    if (!Pile::loadEmptyPileTexture("assets/cards/Pile.jpg")) {
+        std::cerr << "ѕредупреждение: текстура пустой стопки не загружена" << std::endl;
+    }
 
 
     // SFML 3: loadFromFile возвращает optional или bool

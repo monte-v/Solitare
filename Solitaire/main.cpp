@@ -1,9 +1,16 @@
+#define _CRTDBG_MAP_ALLOC
 #include <iostream>
+#include <clocale>
 #include "Solitaire.h"
 #include "windows.h"
 
 int main() {
+
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
+    setlocale(LC_ALL, "Russian");
+
     std::cout << "=== ÏÀÑÜßÍÑ ÊÎÑÛÍÊÀ ===" << std::endl;
     std::cout << "Çàïóñê ïðèëîæåíèÿ..." << std::endl;
     try {

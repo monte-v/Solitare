@@ -14,13 +14,19 @@ private:
     Rank rank;
     bool faceUp;
 
-    std::shared_ptr<sf::Texture> frontTexture;
-    std::shared_ptr<sf::Texture> backTexture;
+    static std::shared_ptr<sf::Texture> frontTexture;
+    static std::shared_ptr<sf::Texture> backTexture;
     sf::Sprite* sprite;
 
 public:
     Card(Suit s, Rank r);
-    ~Card() { delete sprite; }
+    ~Card();
+    Card(const Card&) noexcept;
+    Card& operator=(const Card&) noexcept;
+
+    // Разрешаем перемещение (если нужно)
+    Card(Card&& other) noexcept;
+    Card& operator=(Card&& other) noexcept;
 
     void output() const;
 
@@ -33,7 +39,7 @@ public:
     bool canPlaceOn(const Card& other) const;
 
     // Графика
-    bool loadTextures(const std::string& frontPath, const std::string& backPath);
+    static bool loadTextures(const std::string& frontPath, const std::string& backPath);
     void flip();
     void setFaceUp(bool up);
     void setPosition(sf::Vector2f pos);

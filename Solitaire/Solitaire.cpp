@@ -9,7 +9,13 @@ Solitaire::Solitaire() : window(sf::VideoMode({ 1200, 800 }), "Пасьянс Косынка -
     //backgroundSprite = std::make_shared<sf::Sprite>();
 
     // SFML 3: VideoMode принимает sf::Vector2u
-    window.setFramerateLimit(60);
+    //window.setFramerateLimit(60);
+
+
+    std::cout << "Загрузка текстур карт..." << std::endl;
+    if (!Card::loadTextures("", "assets/cards/cards_1/shirt.png")) {
+        std::cerr << "Предупреждение: текстуры не загружены" << std::endl;
+    }
 
     if (!initialize()) {
         std::cerr << "Не удалось инициализировать приложение" << std::endl;

@@ -25,9 +25,10 @@ public:
     void addCard(Card card);
     Card removeTopCard();
     Card takeCardAt(int index);
-    //std::vector<Card> takeCardsFrom(int startIndex);
+    std::vector<Card> takeCardsFrom(int startIndex);
 
     //// Геттеры
+    std::vector<Card>& getCardsRef() { return cards; }
     Card& getTopCard();
     const Card& getTopCard() const;
     Card& getCardAt(int index);

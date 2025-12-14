@@ -15,12 +15,13 @@ private:
     //std::shared_ptr<sf::Sprite> backgroundSprite;
 
     //// Перетаскивание
-    //std::vector<Card*> draggedCards;
-    Pile* sourcePile;
-    //sf::Vector2f dragOffset;
+    std::vector<Card> draggedCards;     // Карты, которые перетаскиваем
+    Pile* sourcePile;                   // Откуда взяли карты
+    sf::Vector2f dragOffset;            // Смещение от курсора
+    bool isDragging;                    // Флаг перетаскивания
 
     //// UI состояние
-    bool isDragging;
+    //bool isDragging;
     //sf::Vector2f lastMousePos;
 
 public:
@@ -41,16 +42,17 @@ private:
     void handleMousePressed(const sf::Event::MouseButtonPressed& event);
     void handleMouseReleased(const sf::Event::MouseButtonReleased& event);
     void handleMouseMoved(const sf::Event::MouseMoved& event);
-    void handleKeyPressed(const sf::Event::KeyPressed& event);
+    //void handleKeyPressed(const sf::Event::KeyPressed& event);
 
     // Обновление и отрисовка
     //void update(sf::Time deltaTime);
     void render();
 
-    // Логика игры
-    //Pile* getPileAt(sf::Vector2f position);
-    //void startDragging(Card& card, Pile& pile);
-    //void stopDragging();
+    // Перетаскивание
+    Pile* getPileAt(sf::Vector2f position);
+    void startDragging(Pile* pile, int cardIndex);
+    void updateDragging(sf::Vector2f mousePos);
+    void stopDragging(sf::Vector2f mousePos);
 
     // Вспомогательные методы
     //void drawUI();

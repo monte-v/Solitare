@@ -1,10 +1,24 @@
 ﻿#include "Card.h"
 #include <stdexcept>
 
-std::shared_ptr<sf::Texture> Card::frontTexture = nullptr;
 std::shared_ptr<sf::Texture> Card::backTexture = nullptr;
+std::unordered_map<std::string, std::shared_ptr<sf::Texture>> Card::frontTextureCache;
+
+//std::shared_ptr<sf::Texture> Card::frontTexture = nullptr;
+//std::shared_ptr<sf::Texture> Card::backTexture = nullptr;
 
 Card::Card(Suit s, Rank r) : suit(s), rank(r), faceUp(false), sprite(nullptr) {
+    //if (frontTexture != nullptr && backTexture != nullptr) {
+    //    sprite = new sf::Sprite(faceUp? *frontTexture: *backTexture);
+
+    //    // Масштабируем
+    //    if (backTexture->getSize().x > 0 && backTexture->getSize().y > 0) {
+    //        sprite->setScale(sf::Vector2f(
+    //            static_cast<float>(WIDTH) / backTexture->getSize().x,
+    //            static_cast<float>(HEIGHT) / backTexture->getSize().y
+    //        ));
+    //    }
+    //}
     if (backTexture) {
         sprite = new sf::Sprite(*backTexture);
 
@@ -15,6 +29,9 @@ Card::Card(Suit s, Rank r) : suit(s), rank(r), faceUp(false), sprite(nullptr) {
                 static_cast<float>(HEIGHT) / backTexture->getSize().y
             ));
         }
+    }
+    else {
+        std::cerr << "Внимание: рубашка не загружена!" << std::endl;
     }
 }
 
@@ -32,16 +49,41 @@ Card::Card(const Card& other) noexcept
     sprite(nullptr)  {
 
     // Создаем НОВЫЙ спрайт
-    sprite = new sf::Sprite(faceUp ? *frontTexture: *backTexture);
+    //sprite = new sf::Sprite(faceUp ? *frontTexture: *backTexture);
+
+    //if (other.sprite) {
+    //    // Копируем ВСЕ свойства спрайта
+    //    *sprite = *(other.sprite);
+
+    //    //// Убедимся, что текстура установлена
+    //    //if (backTexture && !(sprite->getTexture())) {
+    //    //    sprite->setTexture(*backTexture);
+    //    //}
+    //}
+    if (faceUp) {
+        // Если карта открыта, загружаем лицевую текстуру
+        loadFrontTexture();
+    }
+
+    // Создаем НОВЫЙ спрайт
+    if (faceUp) {
+        std::string key = getTextureKey();
+        auto it = frontTextureCache.find(key);
+        if (it != frontTextureCache.end()) {
+            sprite = new sf::Sprite(*it->second);
+        }
+        else {
+            sprite = new sf::Sprite(*backTexture);
+        }
+    }
+    else {
+        sprite = new sf::Sprite(*backTexture);
+    }
 
     if (other.sprite) {
-        // Копируем ВСЕ свойства спрайта
-        *sprite = *(other.sprite);
-
-        //// Убедимся, что текстура установлена
-        //if (backTexture && !(sprite->getTexture())) {
-        //    sprite->setTexture(*backTexture);
-        //}
+        // Копируем свойства спрайта
+        sprite->setPosition(other.sprite->getPosition());
+        sprite->setScale(other.sprite->getScale());
     }
 
     std::cout << "Вызван конструктор копирования Card" << std::endl;
@@ -117,6 +159,89 @@ Card& Card::operator=(Card&& other) noexcept {
     return *this;
 }
 
+std::string Card::getTextureFileName() const {
+    std::string rankStr;
+    switch (rank) {
+    case Rank::Ace: rankStr = "Ace"; break;
+    case Rank::Two: rankStr = "2"; break;
+    case Rank::Three: rankStr = "3"; break;
+    case Rank::Four: rankStr = "4"; break;
+    case Rank::Five: rankStr = "5"; break;
+    case Rank::Six: rankStr = "6"; break;
+    case Rank::Seven: rankStr = "7"; break;
+    case Rank::Eight: rankStr = "8"; break;
+    case Rank::Nine: rankStr = "9"; break;
+    case Rank::Ten: rankStr = "10"; break;
+    case Rank::Jack: rankStr = "Jack"; break;
+    case Rank::Queen: rankStr = "Queen"; break;
+    case Rank::King: rankStr = "King"; break;
+    }
+
+    std::string suitStr;
+    switch (suit) {
+    case Suit::Hearts: suitStr = "Hearts"; break;
+    case Suit::Diamonds: suitStr = "Diamonds"; break;
+    case Suit::Clubs: suitStr = "Clubs"; break;
+    case Suit::Spades: suitStr = "Spades"; break;
+    }
+
+    return rankStr + "_" + suitStr + ".jpg";
+}
+
+std::string Card::getTextureKey() const {
+    return std::to_string(static_cast<int>(suit)) + "_" +
+        std::to_string(static_cast<int>(rank));
+}
+
+bool Card::loadFrontTexture() {
+    std::string key = getTextureKey();
+
+    // Проверяем кэш
+    auto it = frontTextureCache.find(key);
+    if (it != frontTextureCache.end()) {
+        return true; // Текстура уже загружена
+    }
+
+    // Загружаем из файла
+    std::string fileName = getTextureFileName();
+    std::string assetsPath = "assets/cards/cards_1/"; // Базовый путь
+
+    // Можно настроить путь через настройки или параметр
+    std::string fullPath = assetsPath + fileName;
+
+    auto texture = std::make_shared<sf::Texture>();
+    if (texture->loadFromFile(fullPath)) {
+        frontTextureCache[key] = texture;
+        std::cout << "Загружена текстура: " << fileName << std::endl;
+        return true;
+    }
+    else {
+        std::cerr << "Ошибка загрузки текстуры: " << fullPath << std::endl;
+        return false;
+    }
+}
+
+bool Card::loadBackTexture(const std::string& backPath) {
+    if (backTexture) {
+        return true; // Уже загружена
+    }
+
+    backTexture = std::make_shared<sf::Texture>();
+    if (backTexture->loadFromFile(backPath)) {
+        std::cout << "Рубашка загружена: " << backPath << std::endl;
+        return true;
+    }
+    else {
+        std::cerr << "Ошибка загрузки рубашки: " << backPath << std::endl;
+        backTexture.reset();
+        return false;
+    }
+}
+
+void Card::clearTextureCache() {
+    frontTextureCache.clear();
+}
+
 void Card::output() const{
     std::array<std::string, 4> s_names = { "Hearts", "Diamonds", "Clubs", "Spades" };
     std::array<std::string, 14> r_names = { "Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
@@ -135,43 +260,93 @@ bool Card::canPlaceOn(const Card& other) const {
         (static_cast<int>(rank) + 1 == static_cast<int>(other.rank));
 }
 
-bool Card::loadTextures(const std::string& frontPath, const std::string& backPath) {
-    if (backTexture) {
-        return true;
-    }
-
-    // Загружаем рубашку
-    backTexture = std::make_shared<sf::Texture>();
-
-    if (backTexture->loadFromFile(backPath)) {
-        std::cout << "Текстура рубашки успешно загружена" << std::endl;
-
-        // Создаем front texture (пока пустую)
-        frontTexture = std::make_shared<sf::Texture>();
-
-        return true;
-    }
-    else {
-        std::cerr << "Ошибка: не удалось загрузить текстуру рубашки: " << backPath << std::endl;
-
-        // Создаем простую текстуру для отладки
-        // Можно создать цветной прямоугольник или оставить nullptr
-        backTexture.reset();
-        frontTexture.reset();
-
-        return false;
-    }
-}
+//bool Card::loadTextures(const std::string& frontPath, const std::string& backPath) {
+//    if (backTexture) {
+//        return true;
+//    }
+//
+//    // Загружаем рубашку
+//    backTexture = std::make_shared<sf::Texture>();
+//
+//    if (backTexture->loadFromFile(backPath)) {
+//        std::cout << "Текстура рубашки успешно загружена" << std::endl;
+//
+//        // Создаем front texture (пока пустую)
+//        frontTexture = std::make_shared<sf::Texture>();
+//
+//        return true;
+//    }
+//    else {
+//        std::cerr << "Ошибка: не удалось загрузить текстуру рубашки: " << backPath << std::endl;
+//
+//        // Создаем простую текстуру для отладки
+//        // Можно создать цветной прямоугольник или оставить nullptr
+//        backTexture.reset();
+//        frontTexture.reset();
+//
+//        return false;
+//    }
+//}
 
 void Card::flip() {
+    //faceUp = !faceUp;
+    //if (sprite && frontTexture && backTexture) {
+    //    if (faceUp) {
+    //        std::cout << "Переворачиваю лицом вверх" << std::endl;
+    //        sprite->setTexture(*frontTexture, true);
+    //    }
+    //    else {
+    //        std::cout << "Переворачиваю рубашкой вверх" << std::endl;
+    //        sprite->setTexture(*backTexture, true);
+    //    }
+    //}
+    if (faceUp == !faceUp) return; // Уже в нужном состоянии
+
     faceUp = !faceUp;
-    if (sprite && frontTexture && backTexture) {
-        if (faceUp) {
-            // Пока frontTexture пустая, но можно загрузить позже
-            // sprite->setTexture(*frontTexture, true);
+
+    if (!sprite) {
+        std::cerr << "Нет спрайта для переворота!" << std::endl;
+        return;
+    }
+
+    if (faceUp) {
+        // Переворачиваем на лицевую сторону
+        // 1. Загружаем текстуру (если еще не загружена)
+        if (!loadFrontTexture()) {
+            std::cerr << "Не удалось загрузить лицевую текстуру!" << std::endl;
+            faceUp = false; // Отменяем переворот
+            return;
         }
-        else {
+
+        // 2. Устанавливаем текстуру
+        std::string key = getTextureKey();
+        auto it = frontTextureCache.find(key);
+        if (it != frontTextureCache.end()) {
+            sprite->setTexture(*it->second, true);
+
+            // Масштабируем под размер карты
+            sf::Vector2u texSize = it->second->getSize();
+            if (texSize.x > 0 && texSize.y > 0) {
+                sprite->setScale(sf::Vector2f(
+                    static_cast<float>(WIDTH) / texSize.x,
+                    static_cast<float>(HEIGHT) / texSize.y
+                ));
+            }
+        }
+    }
+    else {
+        // Переворачиваем на рубашку
+        if (backTexture) {
             sprite->setTexture(*backTexture, true);
+
+            // Масштабируем
+            sf::Vector2u texSize = backTexture->getSize();
+            if (texSize.x > 0 && texSize.y > 0) {
+                sprite->setScale(sf::Vector2f(
+                    static_cast<float>(WIDTH) / texSize.x,
+                    static_cast<float>(HEIGHT) / texSize.y
+                ));
+            }
         }
     }
 }
@@ -221,28 +396,8 @@ void Card::draw(sf::RenderTarget& target) const {
 }
 
 bool Card::contains(sf::Vector2f point) const {
-    // SFML 3: getLocalBounds возвращает sf::Rect
+    // SFML 3: getLocalBounds возвращает sf::Rect contains - содержит
     if (!sprite) return false;
     return sprite->getGlobalBounds().contains(point);
 }
 
-//std::string Card::toString() const {
-//    std::string suitStr;
-//    switch (suit) {
-//    case Suit::Hearts: suitStr = "ser"; break;
-//    case Suit::Diamonds: suitStr = "bub"; break;
-//    case Suit::Clubs: suitStr = "kr"; break;
-//    case Suit::Spades: suitStr = "pik"; break;
-//    }
-//
-//    std::string rankStr;
-//    switch (rank) {
-//    case Rank::Ace: rankStr = "A"; break;
-//    case Rank::Jack: rankStr = "J"; break;
-//    case Rank::Queen: rankStr = "Q"; break;
-//    case Rank::King: rankStr = "K"; break;
-//    default: rankStr = std::to_string(static_cast<int>(rank));
-//    }
-//
-//    return rankStr + suitStr + (faceUp ? "up" : "dw");
-//}

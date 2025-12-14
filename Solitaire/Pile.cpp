@@ -114,6 +114,7 @@ bool Pile::contains(sf::Vector2f point) const {
 // Открыть верхнюю карту
 void Pile::revealTopCard() {
     if (!cards.empty() && !cards.back().isFaceUp()) {
+        std::cout << "Стопка не пуста и последняя карта рубашкой вверх" << std::endl;
         cards.back().setFaceUp(true);
     }
 }
@@ -123,4 +124,18 @@ void Pile::draw(sf::RenderTarget& target) const {
         // Предполагая, что Card имеет метод draw
         card.draw(target);
     }
+}
+
+std::vector<Card> Pile::takeCardsFrom(int startIndex) {
+    if (startIndex < 0 || startIndex >= cards.size()) {
+        throw std::runtime_error("Неверный индекс!");
+    }
+
+    std::vector<Card> takenCards;
+    for (int i = startIndex; i < cards.size(); i++) {
+        takenCards.push_back(cards[i]);
+    }
+
+    cards.erase(cards.begin() + startIndex, cards.end());
+    return takenCards;
 }

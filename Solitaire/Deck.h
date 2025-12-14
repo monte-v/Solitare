@@ -25,5 +25,5 @@ public:
     size_t size() const { return cards.size(); }
 
     // Загрузка текстур для всех карт (оптимизация)
-    bool loadCardTextures(const std::string& directory);
+    //bool loadCardTextures(const std::string& directory);
 };

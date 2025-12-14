@@ -24,22 +24,36 @@ void Game::newGame() {
     deck.shuffle();
     std::cout << "Колода создана и перемешана" << std::endl;
 
-    std::string assetsPath = "assets\\cards";
-    if (!deck.loadCardTextures(assetsPath)) {
-        std::cerr << "Внимание: не все текстуры загружены" << std::endl;
-    }
+    //std::string assetsPath = "assets\\cards";
+    //if (!deck.loadCardTextures(assetsPath)) {
+    //    std::cerr << "Внимание: не все текстуры загружены" << std::endl;
+    //}
+
 
     // 2. Раздаем карты в игровые стопки
     setupTableaus();
+
+
+
 
     // 3. Остальные карты - в колоду для взятия
     while (deck.size() > 0) {
         //stock.addCard(deck.draw());
 
         Card card = deck.draw();
-        card.setFaceUp(false);  // В стоке рубашкой вверх
         stock.addCard(card);
     }
+
+    stock.revealTopCard();
+    //drawFromStock();
+    //while (deck.size() > 0) {
+    //    stock.addCard(drawFromStock());
+    //}
+
+    //if (!stock.isEmpty()) {
+    //    stock.getCardsRef().back().setFaceUp(true);
+    //}
+
     std::cout << "Сток" << std::endl;
     stock.output();
     std::cout << "Стопки заполнены" << std::endl;
@@ -56,18 +70,21 @@ void Game::setupTableaus() {
     // 7-я стопка: 7 карт (последняя открыта)
 
     for (int i = 0; i < 7; i++) {
-        for (int j = 0; j <= i; j++) {
+        int j;
+        for (j = 0; j <= i; j++) {
             Card card = deck.draw();
 
-            // Последняя карта в стопке - открыта
-            if (j == i) {
-                card.setFaceUp(true);
-            }
+            //// Последняя карта в стопке - открыта
+            //if (j == i) {
+            //    card.setFaceUp(true);
+            //}
 
             tableaus[i].addCard(card);
         }
-        std::cout << "стопка " << i << std::endl;
-        tableaus[i].output();
+        std::cout << "Переворачиваю карту из стопки " << i << " tableau" << std::endl;
+        tableaus[i].revealTopCard();
+        if (tableaus[i].getTopCard().isFaceUp()) { std::cout << "Карта перевернута" << std::endl; };
+        std::cout << "Стопка " << i << " содержит "<< j << " карт" << std::endl;
     }
 }
 
@@ -95,10 +112,13 @@ bool Game::moveCard(Pile& from, Pile& to, int cardIndex) {
 }
 
 void Game::drawFromStock() {
-    if (!stock.isEmpty()) {
-        Card drawnCard = stock.drawCard();
-        drawnCard.setFaceUp(true);
-        // Здесь нужно куда-то положить drawnCard
-        // В косынке обычно есть Waste стопка, но для простоты...
-    }
+    //if (!stock.isEmpty()) {
+    //    Card drawnCard = stock.drawCard();
+    //    drawnCard.setFaceUp(true);
+    //    // Здесь нужно куда-то положить drawnCard
+    //    // В косынке обычно есть Waste стопка, но для простоты...
+    //    while (deck.size() > 0) {
+    //        stock.addCard(drawnCard);
+    //    }
+    //}
 }

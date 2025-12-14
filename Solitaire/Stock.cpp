@@ -19,6 +19,7 @@ void Stock::reset(const std::vector<Card>& newCards) {
     }
 }
 
+
 std::vector<Card> Stock::getVisibleCards() const {
     if (!wasteMode || cards.empty()) {
         return cards;

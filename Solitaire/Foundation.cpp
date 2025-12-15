@@ -1,5 +1,9 @@
 #include "Foundation.h"
 
+std::array<std::shared_ptr<sf::Texture>, 4> Foundation::suitTextures = {
+    nullptr, nullptr, nullptr, nullptr
+};
+
 Foundation::Foundation() : Foundation(Suit::Hearts, { 0, 0 }) {}
 Foundation::Foundation(Suit s, sf::Vector2f pos)
     : Pile(pos, 0.0f), suit(s) {
@@ -45,4 +49,57 @@ bool Foundation::canAddCard(const Card& card) const {
 
 bool Foundation::isComplete() const {
     return cards.size() == 13;
+}
+
+bool Foundation::loadTextures(const std::string& basePath) {
+    // Имена файлов для каждой масти
+    std::array<std::string, 4> fileNames = {
+        "Hearts.png", "Diamonds.png", "Clubs.png", "Spades.png"
+    };
+
+    bool allLoaded = true;
+
+    for (int i = 0; i < 4; i++) {
+        if (!suitTextures[i]) {
+            std::string fullPath = basePath + fileNames[i];
+            suitTextures[i] = std::make_shared<sf::Texture>();
+
+            if (suitTextures[i]->loadFromFile(fullPath)) {
+                std::cout << "Текстура " << fileNames[i] << " загружена" << std::endl;
+            }
+            else {
+                std::cerr << "Ошибка загрузки: " << fullPath << std::endl;
+                suitTextures[i].reset();
+                allLoaded = false;
+            }
+        }
+    }
+
+    return allLoaded;
+}
+
+void Foundation::draw(sf::RenderTarget& target) const {
+    // Рисуем базовую стопку
+    Pile::draw(target);
+
+    // Рисуем текстуру масти поверх (если пустая и текстура загружена)
+    if (cards.empty()) {
+        int suitIndex = static_cast<int>(suit);
+
+        if (suitIndex >= 0 && suitIndex < 4 && suitTextures[suitIndex]) {
+            sf::Sprite suitSprite(*suitTextures[suitIndex]);
+            suitSprite.setPosition(position);
+
+            // Масштабирование
+            sf::Vector2u texSize = suitTextures[suitIndex]->getSize();
+            if (texSize.x > 0 && texSize.y > 0) {
+                suitSprite.setScale(sf::Vector2f(
+                    static_cast<float>(Card::WIDTH) / texSize.x,
+                    static_cast<float>(Card::HEIGHT) / texSize.y
+                ));
+            }
+
+            target.draw(suitSprite);
+        }
+    }
 }

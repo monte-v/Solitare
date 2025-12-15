@@ -5,7 +5,7 @@
 class Foundation : public Pile {
 private:
     Suit suit;
-
+    static std::array<std::shared_ptr<sf::Texture>, 4> suitTextures;
 public:
     Foundation();
     Foundation(Suit s, sf::Vector2f pos);
@@ -21,6 +21,9 @@ public:
 
     Suit getSuit() const { return suit; }
     bool isComplete() const;
+
+    static bool loadTextures(const std::string& basePath);
+    void draw(sf::RenderTarget& target) const override;
 
 private:
     //void updateLayout() override;  // Карты лежат вплотную

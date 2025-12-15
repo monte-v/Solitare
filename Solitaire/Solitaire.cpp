@@ -1,7 +1,7 @@
 #include "Solitaire.h"
 #include <iostream>
 
-Solitaire::Solitaire() : window(sf::VideoMode({ 1200, 800 }), "Solitaire"), 
+Solitaire::Solitaire() : window(sf::VideoMode({ 1000, 800 }), "Solitaire"), 
     sourcePile(nullptr), isDragging(false), startDragMousePos(0, 0) {
     if (!initialize()) {
         std::cerr << "Не удалось инициализировать приложение" << std::endl;
@@ -50,11 +50,15 @@ bool Solitaire::loadResources() {
     if (!menuBar.loadFont("assets/fonts/arial.ttf")) {
         std::cerr << "Шрифт для меню не загружен" << std::endl;
     }
-    if (!Card::loadBackTexture("assets/cards/cards_1/shirt.png")) {
+    if (!Card::loadBackTexture("assets/cards/cards_1/shirt.jpg")) {
         std::cerr << "Предупреждение: рубашка не загружена" << std::endl;
     }
-    if (!Pile::loadEmptyPileTexture("assets/cards/Pile.jpg")) {
+    if (!Pile::loadEmptyPileTexture("assets/cards/Pile_1/Pile.jpg")) {
         std::cerr << "Предупреждение: текстура пустой стопки не загружена" << std::endl;
+    }
+    if (!Foundation::loadTextures("assets/cards/Pile_1/")) {
+        std::cerr << "Текстура Foundation не загружена" << std::endl;
+        // Можно использовать цветной прямоугольник как запасной вариант
     }
 
     return true; 

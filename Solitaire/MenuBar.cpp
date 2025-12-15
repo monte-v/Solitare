@@ -63,7 +63,7 @@ void MenuBar::handleClick(const sf::Vector2f& mousePos) {
 
         // Возвращаем цвет через короткое время (можно сделать через таймер)
         // Для простоты вернем сразу
-        newGameButton.setFillColor(sf::Color(80, 80, 100));
+        newGameButton.setFillColor(sf::Color::White);
     }
 }
 

@@ -6,14 +6,12 @@ public:
     Tableau();
     Tableau(sf::Vector2f pos);
 
-    Tableau(Tableau&& other) noexcept;
-    Tableau& operator=(Tableau&& other) noexcept;
-
-    // Копирующие операции
     Tableau(const Tableau& other);
     Tableau& operator=(const Tableau& other);
 
-    // Правила Tableau
+    Tableau(Tableau&& other) noexcept;
+    Tableau& operator=(Tableau&& other) noexcept;
+
     bool canAddCard(const Card& card) const override;
     bool canTakeCard() const override { return !cards.empty(); }
     bool canTakeCardFrom(int index) const override;

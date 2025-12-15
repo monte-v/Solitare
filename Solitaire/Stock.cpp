@@ -8,7 +8,7 @@ Card Stock::drawCard() {
     }
 
     Card card = removeTopCard();
-    card.setFaceUp(true);  // Карты из стока всегда открыты
+    card.setFaceUp(true); 
     return card;
 }
 
@@ -19,13 +19,11 @@ void Stock::reset(const std::vector<Card>& newCards) {
     }
 }
 
-
 std::vector<Card> Stock::getVisibleCards() const {
     if (!wasteMode || cards.empty()) {
         return cards;
     }
 
-    // В wasteMode показываем только последние 3 карты
     int startIndex = std::max(0, (int)cards.size() - 3);
     std::vector<Card> visible;
     for (int i = startIndex; i < cards.size(); i++) {

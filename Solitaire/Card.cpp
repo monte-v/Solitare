@@ -4,25 +4,10 @@
 std::shared_ptr<sf::Texture> Card::backTexture = nullptr;
 std::unordered_map<std::string, std::shared_ptr<sf::Texture>> Card::frontTextureCache;
 
-//std::shared_ptr<sf::Texture> Card::frontTexture = nullptr;
-//std::shared_ptr<sf::Texture> Card::backTexture = nullptr;
-
 Card::Card(Suit s, Rank r) : suit(s), rank(r), faceUp(false), sprite(nullptr) {
-    //if (frontTexture != nullptr && backTexture != nullptr) {
-    //    sprite = new sf::Sprite(faceUp? *frontTexture: *backTexture);
-
-    //    // Масштабируем
-    //    if (backTexture->getSize().x > 0 && backTexture->getSize().y > 0) {
-    //        sprite->setScale(sf::Vector2f(
-    //            static_cast<float>(WIDTH) / backTexture->getSize().x,
-    //            static_cast<float>(HEIGHT) / backTexture->getSize().y
-    //        ));
-    //    }
-    //}
     if (backTexture) {
         sprite = new sf::Sprite(*backTexture);
 
-        // Масштабируем
         if (backTexture->getSize().x > 0 && backTexture->getSize().y > 0) {
             sprite->setScale(sf::Vector2f(
                 static_cast<float>(WIDTH) / backTexture->getSize().x,
@@ -48,24 +33,10 @@ Card::Card(const Card& other) noexcept
     faceUp(other.faceUp),
     sprite(nullptr)  {
 
-    // Создаем НОВЫЙ спрайт
-    //sprite = new sf::Sprite(faceUp ? *frontTexture: *backTexture);
-
-    //if (other.sprite) {
-    //    // Копируем ВСЕ свойства спрайта
-    //    *sprite = *(other.sprite);
-
-    //    //// Убедимся, что текстура установлена
-    //    //if (backTexture && !(sprite->getTexture())) {
-    //    //    sprite->setTexture(*backTexture);
-    //    //}
-    //}
     if (faceUp) {
-        // Если карта открыта, загружаем лицевую текстуру
         loadFrontTexture();
     }
 
-    // Создаем НОВЫЙ спрайт
     if (faceUp) {
         std::string key = getTextureKey();
         auto it = frontTextureCache.find(key);
@@ -81,7 +52,6 @@ Card::Card(const Card& other) noexcept
     }
 
     if (other.sprite) {
-        // Копируем свойства спрайта
         sprite->setPosition(other.sprite->getPosition());
         sprite->setScale(other.sprite->getScale());
     }
@@ -89,47 +59,29 @@ Card::Card(const Card& other) noexcept
     std::cout << "Вызван конструктор копирования Card" << std::endl;
 }
 
-// Оператор присваивания копированием
 Card& Card::operator=(const Card& other) noexcept  {
-    // Проверка на самоприсваивание
     if (this == &other) {
         return *this;
     }
 
-    // 1. Копируем простые поля
     suit = other.suit;
     rank = other.rank;
     faceUp = other.faceUp;
 
-    // 2. Обрабатываем спрайт (глубокое копирование)
     if (other.sprite) {
-        // Если у нас уже есть спрайт
         if (sprite) {
-            // Копируем состояние спрайта
             *sprite = *(other.sprite);
-
-            //// Убедимся, что текстура установлена
-            //if (backTexture && !sprite->getTexture()) {
-            //    sprite->setTexture(*backTexture);
-            //}
         }
         else {
-            // Создаем новый спрайт
             sprite = new sf::Sprite(*(other.sprite));
-
-            //// Убедимся, что текстура установлена
-            //if (backTexture && !sprite->getTexture()) {
-            //    sprite->setTexture(*backTexture);
-            //}
         }
     }
-    //else {
-    //    // Если у other нет спрайта, удаляем свой
-    //    if (sprite) {
-    //        delete sprite;
-    //        sprite = nullptr;
-    //    }
-    //}
+    else {
+        if (sprite) {
+            delete sprite;
+            sprite = nullptr;
+        }
+    }
 
     std::cout << "Вызван оператор присваивания Card" << std::endl;
     return *this;
@@ -137,24 +89,21 @@ Card& Card::operator=(const Card& other) noexcept  {
 
 Card::Card(Card&& other) noexcept
     : suit(other.suit), rank(other.rank), faceUp(other.faceUp), sprite(other.sprite) {
-    other.sprite = nullptr; // забираем спрайт у другого объекта
+    other.sprite = nullptr; 
 }
 
-// Оператор присваивания перемещением
 Card& Card::operator=(Card&& other) noexcept {
     if (this != &other) {
-        // Удаляем текущий спрайт
         if (sprite) {
             delete sprite;
         }
 
-        // Перемещаем данные
         suit = other.suit;
         rank = other.rank;
         faceUp = other.faceUp;
         sprite = other.sprite;
 
-        other.sprite = nullptr; // забираем спрайт
+        other.sprite = nullptr;
     }
     return *this;
 }
@@ -196,17 +145,14 @@ std::string Card::getTextureKey() const {
 bool Card::loadFrontTexture() {
     std::string key = getTextureKey();
 
-    // Проверяем кэш
     auto it = frontTextureCache.find(key);
     if (it != frontTextureCache.end()) {
-        return true; // Текстура уже загружена
+        return true; 
     }
 
-    // Загружаем из файла
     std::string fileName = getTextureFileName();
-    std::string assetsPath = "assets/cards/cards_1/"; // Базовый путь
+    std::string assetsPath = "assets/cards/cards_1/"; 
 
-    // Можно настроить путь через настройки или параметр
     std::string fullPath = assetsPath + fileName;
 
     auto texture = std::make_shared<sf::Texture>();
@@ -223,7 +169,7 @@ bool Card::loadFrontTexture() {
 
 bool Card::loadBackTexture(const std::string& backPath) {
     if (backTexture) {
-        return true; // Уже загружена
+        return true; 
     }
 
     backTexture = std::make_shared<sf::Texture>();
@@ -260,47 +206,8 @@ bool Card::canPlaceOn(const Card& other) const {
         (static_cast<int>(rank) + 1 == static_cast<int>(other.rank));
 }
 
-//bool Card::loadTextures(const std::string& frontPath, const std::string& backPath) {
-//    if (backTexture) {
-//        return true;
-//    }
-//
-//    // Загружаем рубашку
-//    backTexture = std::make_shared<sf::Texture>();
-//
-//    if (backTexture->loadFromFile(backPath)) {
-//        std::cout << "Текстура рубашки успешно загружена" << std::endl;
-//
-//        // Создаем front texture (пока пустую)
-//        frontTexture = std::make_shared<sf::Texture>();
-//
-//        return true;
-//    }
-//    else {
-//        std::cerr << "Ошибка: не удалось загрузить текстуру рубашки: " << backPath << std::endl;
-//
-//        // Создаем простую текстуру для отладки
-//        // Можно создать цветной прямоугольник или оставить nullptr
-//        backTexture.reset();
-//        frontTexture.reset();
-//
-//        return false;
-//    }
-//}
-
 void Card::flip() {
-    //faceUp = !faceUp;
-    //if (sprite && frontTexture && backTexture) {
-    //    if (faceUp) {
-    //        std::cout << "Переворачиваю лицом вверх" << std::endl;
-    //        sprite->setTexture(*frontTexture, true);
-    //    }
-    //    else {
-    //        std::cout << "Переворачиваю рубашкой вверх" << std::endl;
-    //        sprite->setTexture(*backTexture, true);
-    //    }
-    //}
-    if (faceUp == !faceUp) return; // Уже в нужном состоянии
+    if (faceUp == !faceUp) return; 
 
     faceUp = !faceUp;
 
@@ -310,21 +217,17 @@ void Card::flip() {
     }
 
     if (faceUp) {
-        // Переворачиваем на лицевую сторону
-        // 1. Загружаем текстуру (если еще не загружена)
         if (!loadFrontTexture()) {
             std::cerr << "Не удалось загрузить лицевую текстуру!" << std::endl;
-            faceUp = false; // Отменяем переворот
+            faceUp = false; 
             return;
         }
 
-        // 2. Устанавливаем текстуру
         std::string key = getTextureKey();
         auto it = frontTextureCache.find(key);
         if (it != frontTextureCache.end()) {
             sprite->setTexture(*it->second, true);
 
-            // Масштабируем под размер карты
             sf::Vector2u texSize = it->second->getSize();
             if (texSize.x > 0 && texSize.y > 0) {
                 sprite->setScale(sf::Vector2f(
@@ -335,11 +238,9 @@ void Card::flip() {
         }
     }
     else {
-        // Переворачиваем на рубашку
         if (backTexture) {
             sprite->setTexture(*backTexture, true);
 
-            // Масштабируем
             sf::Vector2u texSize = backTexture->getSize();
             if (texSize.x > 0 && texSize.y > 0) {
                 sprite->setScale(sf::Vector2f(
@@ -371,33 +272,18 @@ sf::Vector2f Card::getPosition() const {
 }
 
 void Card::draw(sf::RenderTarget& target) const {
-    //if (sprite) {
-    //    target.draw(*sprite);
-    //}
-
-    //std::cout << "Card::draw() - спрайт: " << (sprite ? "есть" : "nullptr")
-    //    << ", позиция: " << (sprite ? sprite->getPosition().x : 0)
-    //    << ", " << (sprite ? sprite->getPosition().y : 0) << std::endl;
-
     if (sprite) {
         target.draw(*sprite);
     }
     else {
-    //    // Рисуем отладочный прямоугольник
-    //    sf::RectangleShape debugRect(sf::Vector2f(WIDTH, HEIGHT));
-    //    debugRect.setPosition(getPosition());
-    //    debugRect.setFillColor(sf::Color::Yellow);  // Желтый = карта без спрайта
-    //    debugRect.setOutlineColor(sf::Color::Red);
-    //    debugRect.setOutlineThickness(2);
-    //    target.draw(debugRect);
-
         std::cout << "  ВНИМАНИЕ: Карта без спрайта!" << std::endl;
     }
 }
 
 bool Card::contains(sf::Vector2f point) const {
-    // SFML 3: getLocalBounds возвращает sf::Rect contains - содержит
     if (!sprite) return false;
     return sprite->getGlobalBounds().contains(point);
+
+
 }
 

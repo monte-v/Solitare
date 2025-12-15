@@ -3,7 +3,25 @@
 std::shared_ptr<sf::Texture> Pile::emptyPileTexture = nullptr;
 
 Pile::Pile(sf::Vector2f pos, float vSpacing, float hSpacing) : position(pos), verticalSpacing(vSpacing),
-horizontalSpacing(hSpacing), emptyPileSprite(nullptr) {
+horizontalSpacing(hSpacing), emptyPileSprite(nullptr) {}
+
+Pile::Pile(const Pile& other)
+    : cards(other.cards), 
+    position(other.position),
+    verticalSpacing(other.verticalSpacing),
+    horizontalSpacing(other.horizontalSpacing),
+    emptyPileSprite(nullptr)  { }
+
+Pile& Pile::operator=(const Pile& other) {
+    if (this != &other) {
+        cards = other.cards;
+        position = other.position;
+        verticalSpacing = other.verticalSpacing;
+        horizontalSpacing = other.horizontalSpacing;
+
+        emptyPileSprite.reset();
+    }
+    return *this;
 }
 
 Pile::Pile(Pile&& other) noexcept
@@ -11,12 +29,8 @@ Pile::Pile(Pile&& other) noexcept
     position(std::move(other.position)),
     verticalSpacing(std::move(other.verticalSpacing)),
     horizontalSpacing(std::move(other.horizontalSpacing)),
-    emptyPileSprite(std::move(other.emptyPileSprite))
-{
-    // other теперь в валидном, но пустом состоянии
-}
+    emptyPileSprite(std::move(other.emptyPileSprite)) { }
 
-// Оператор присваивания перемещением
 Pile& Pile::operator=(Pile&& other) noexcept {
     if (this != &other) {
         cards = std::move(other.cards);
@@ -28,35 +42,10 @@ Pile& Pile::operator=(Pile&& other) noexcept {
     return *this;
 }
 
-// Конструктор копирования (глубокое копирование)
-Pile::Pile(const Pile& other)
-    : cards(other.cards),  // Card должен иметь корректный конструктор копирования
-    position(other.position),
-    verticalSpacing(other.verticalSpacing),
-    horizontalSpacing(other.horizontalSpacing),
-    emptyPileSprite(nullptr)  // Спрайт не копируем, создадим при необходимости
-{
-    // Карты копируются, спрайт будет создан лениво
-}
-
-// Оператор присваивания копированием
-Pile& Pile::operator=(const Pile& other) {
-    if (this != &other) {
-        cards = other.cards;
-        position = other.position;
-        verticalSpacing = other.verticalSpacing;
-        horizontalSpacing = other.horizontalSpacing;
-
-        // Сбрасываем спрайт - будет создан при необходимости
-        emptyPileSprite.reset();
-    }
-    return *this;
-}
-
 bool Pile::loadEmptyPileTexture(const std::string& path)
 {
     if (emptyPileTexture) {
-        return true; // Уже загружена
+        return true; 
     }
 
     emptyPileTexture = std::make_shared<sf::Texture>();
@@ -73,10 +62,8 @@ bool Pile::loadEmptyPileTexture(const std::string& path)
 
 void Pile::initEmptyPileSprite() {
     if (!emptyPileSprite && emptyPileTexture) {
-        // Создаем спрайт только при необходимости
         emptyPileSprite = std::make_unique<sf::Sprite>(*emptyPileTexture);
 
-        // Масштабируем под размер карты
         sf::Vector2u texSize = emptyPileTexture->getSize();
         if (texSize.x > 0 && texSize.y > 0) {
             emptyPileSprite->setScale(sf::Vector2f(
@@ -92,22 +79,16 @@ void Pile::initEmptyPileSprite() {
 void Pile::output() const {
     for (size_t i = 0; i < cards.size(); ++i) {
         std::cout << i + 1 << ". ";
-        cards[i].output(); // Предполагая, что Card имеет output()
+        cards[i].output(); 
     }
 }
 
-//Добавить карту в стопку
 void Pile::addCard(Card card) {
-    //cards.push_back(card);
-    //card.setPosition(Pile::getCardPosition(cards.size() - 1));
-
     card.setPosition(getCardPosition(cards.size()));
     cards.push_back(card);
 
 }
 
-
-// Удалить верхнюю карту
 Card Pile::removeTopCard() {
     if (cards.empty()) {
         throw std::runtime_error("Стопка пуста!");
@@ -118,8 +99,6 @@ Card Pile::removeTopCard() {
     return topCard;
 }
 
-// Взять карту по индексу (и все карты выше нее)
-// Особенно нужно для Tableau - можно взять не только верхнюю
 Card Pile::takeCardAt(int index) {
     if (index < 0 || index >= cards.size()) {
         throw std::runtime_error("Неверный индекс карты!");
@@ -130,7 +109,6 @@ Card Pile::takeCardAt(int index) {
     return card;
 }
 
-// Получить верхнюю карту (без удаления)
 Card& Pile::getTopCard() {
     if (cards.empty()) {
         throw std::runtime_error("Стопка пуста!");
@@ -145,7 +123,6 @@ const Card& Pile::getTopCard() const {
     return cards.back();
 }
 
-// Получить карту по индексу
 Card& Pile::getCardAt(int index) {
     if (index < 0 || index >= cards.size()) {
         throw std::runtime_error("Неверный индекс карты!");
@@ -153,7 +130,6 @@ Card& Pile::getCardAt(int index) {
     return cards[index];
 }
 
-// Сколько карт открыто в стопке
 int Pile::getFaceUpCount() const {
     int count = 0;
     for (const auto& card : cards) {
@@ -173,26 +149,30 @@ sf::Vector2f Pile::getCardPosition(int cardIndex) const {
 int Pile::getCardIndexAt(sf::Vector2f point) const {
     if (cards.empty()) return -1;
 
-    // Проверяем с верхней карты вниз
     for (int i = cards.size() - 1; i >= 0; i--) {
         if (cards[i].contains(point)) {
             return i;
         }
     }
-    return -1;  // Не попали ни в одну карту
+    return -1;  
 }
 
 // Проверка попадания в границы стопки
 bool Pile::contains(sf::Vector2f point) const {
-    //if (cards.empty()) {
-    //    // Для пустой стопки проверяем попадание в область
-    //    sf::FloatRect bounds(sf::Vector2f(position.x, position.y),
-    //        sf::Vector2f(Card::WIDTH, Card::HEIGHT));
-    //    return bounds.contains(point);
-    //}
+    /*if (cards.empty()) {
+        if (emptyPileTexture) {
+            const_cast<Pile*>(this)->initEmptyPileSprite();
+            if (emptyPileSprite) {
+                return emptyPileSprite->getGlobalBounds().contains(point);
+            }
+        }
 
-    //// Для непустой - проверяем попадание в верхнюю карту
-    //return cards.back().contains(point);
+        sf::FloatRect bounds(position,
+            sf::Vector2f(Card::WIDTH, Card::HEIGHT));
+        return bounds.contains(point);
+    }
+    return cards.back().contains(point);*/
+
     if (cards.empty()) {
         // Для пустой стопки
         if (emptyPileTexture) {
@@ -202,15 +182,19 @@ bool Pile::contains(sf::Vector2f point) const {
             }
         }
 
-        // Если нет текстуры, проверяем стандартную область
         sf::FloatRect bounds(position,
             sf::Vector2f(Card::WIDTH, Card::HEIGHT));
         return bounds.contains(point);
     }
 
-    // Для непустой - проверяем попадание в верхнюю карту
-    return cards.back().contains(point);
+    // ПРОВЕРЯЕМ ВСЕ КАРТЫ СВЕРХУ ВНИЗ
+    for (int i = cards.size() - 1; i >= 0; i--) {
+        if (cards[i].contains(point)) {
+            return true;
+        }
+    }
 
+    return false;
 }
 
 // Открыть верхнюю карту
@@ -223,7 +207,6 @@ void Pile::revealTopCard() {
 
 void Pile::draw(sf::RenderTarget& target) const {
     if (cards.empty() && emptyPileTexture) {
-        // Ленивая инициализация спрайта
         const_cast<Pile*>(this)->initEmptyPileSprite();
 
         if (emptyPileSprite) {
@@ -232,7 +215,6 @@ void Pile::draw(sf::RenderTarget& target) const {
     }
 
     for (const auto& card : cards) {
-        // Предполагая, что Card имеет метод draw
         card.draw(target);
     }
 }

@@ -23,7 +23,4 @@ public:
 
     bool isEmpty() const { return cards.empty(); }
     size_t size() const { return cards.size(); }
-
-    // Загрузка текстур для всех карт (оптимизация)
-    //bool loadCardTextures(const std::string& directory);
 };

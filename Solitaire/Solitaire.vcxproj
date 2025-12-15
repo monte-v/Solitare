@@ -148,6 +148,7 @@
     <ClCompile Include="Foundation.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Pile.cpp" />
     <ClCompile Include="Solitaire.cpp" />
     <ClCompile Include="Stock.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Enums.h" />
     <ClInclude Include="Foundation.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Pile.h" />
     <ClInclude Include="Solitaire.h" />
     <ClInclude Include="Stock.h" />

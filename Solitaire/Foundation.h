@@ -10,20 +10,15 @@ public:
     Foundation();
     Foundation(Suit s, sf::Vector2f pos);
 
-    // Перемещающие операции
-    Foundation(Foundation&& other) noexcept;
-    Foundation& operator=(Foundation&& other) noexcept;
-
-    // Копирующие операции
     Foundation(const Foundation& other);
     Foundation& operator=(const Foundation& other);
 
-    // Правила Foundation
+    Foundation(Foundation&& other) noexcept;
+    Foundation& operator=(Foundation&& other) noexcept;
+
     bool canAddCard(const Card& card) const override;
     bool canTakeCardFrom(int index) const override { return false; }
-    //bool canTakeCard() const override;  // Можно брать только если не нарушится последовательность
 
-    // Дополнительные методы
     Suit getSuit() const { return suit; }
     bool isComplete() const;
 

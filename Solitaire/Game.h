@@ -33,6 +33,8 @@ public:
     void newGame();
     bool moveCard(Pile& from, Pile& to, int cardIndex = -1);
 
+    void clear();
+
     // Система отмены (ваша фишка)
     //bool undoLastMove();
     //void saveMove(const MoveRecord& record);

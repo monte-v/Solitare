@@ -2,11 +2,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include "Game.h"
+#include "MenuBar.h"
 
 class Solitaire {
 private:
     sf::RenderWindow window;
     Game game;
+    MenuBar menuBar;
 
     std::vector<Card> draggedCards;     // Карты, которые перетаскиваем
     Pile* sourcePile;                   // Откуда взяли карты

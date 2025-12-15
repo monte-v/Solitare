@@ -14,6 +14,24 @@ bool Solitaire::initialize() {
         return false;
     }
 
+    menuBar.setSize(sf::Vector2f(1200, 35));
+    menuBar.setPosition(sf::Vector2f(0, 0));
+
+    menuBar.setOnNewGameCallback([this]() {
+        std::cout << "Запуск новой игры через меню..." << std::endl;
+        try {
+            game.newGame();
+
+            isDragging = false;
+            draggedCards.clear();
+            sourcePile = nullptr;
+            startDragIndex = -1;
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Ошибка: " << e.what() << std::endl;
+        }
+    });
+
     try {
         game.newGame();
         std::cout << "Инициализация solitare" << std::endl;
@@ -29,6 +47,9 @@ bool Solitaire::initialize() {
 bool Solitaire::loadResources() {
     std::cout << "Загрузка текстур карт..." << std::endl;
 
+    if (!menuBar.loadFont("assets/fonts/arial.ttf")) {
+        std::cerr << "Шрифт для меню не загружен" << std::endl;
+    }
     if (!Card::loadBackTexture("assets/cards/cards_1/shirt.png")) {
         std::cerr << "Предупреждение: рубашка не загружена" << std::endl;
     }
@@ -63,7 +84,7 @@ void Solitaire::update(sf::Time deltaTime) {
 }
 
 void Solitaire::processEvents() {
-    while (std::optional<sf::Event> event = window.pollEvent()) {
+    /*while (std::optional<sf::Event> event = window.pollEvent()) {
         if (!event) continue;
 
         if (event->is<sf::Event::Closed>()) {
@@ -71,6 +92,33 @@ void Solitaire::processEvents() {
         }
         else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
             handleMousePressed(*mousePressed);
+        }
+        else if (auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
+            handleMouseReleased(*mouseReleased);
+        }
+        else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+            handleMouseMoved(*mouseMoved);
+        }
+    }*/
+
+    while (std::optional<sf::Event> event = window.pollEvent()) {
+        if (!event) continue;
+
+        if (event->is<sf::Event::Closed>()) {
+            window.close();
+        }
+        else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+            sf::Vector2f mousePos = window.mapPixelToCoords(
+                sf::Vector2i(mousePressed->position.x, mousePressed->position.y)
+            );
+
+            // Проверяем, кликнули ли в MenuBar
+            if (mousePos.y <= 35) {
+                menuBar.handleClick(mousePos);
+            }
+            else {
+                handleMousePressed(*mousePressed);
+            }
         }
         else if (auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
             handleMouseReleased(*mouseReleased);
@@ -108,29 +156,31 @@ void Solitaire::handleMousePressed(const sf::Event::MouseButtonPressed& event) {
                 << ", пустой? " << game.getFoundations()[i].isEmpty() << std::endl;
         }
 
-        Pile* pile = getPileAt(mousePos);
+        if (mousePos.y > 35) {
+            Pile* pile = getPileAt(mousePos);
 
-        if (pile) {
-            std::cout << "Найдена стопка" << std::endl;
-            std::cout << "Стопка пустая? : " << pile->isEmpty() << std::endl;
+            if (pile) {
+                std::cout << "Найдена стопка" << std::endl;
+                std::cout << "Стопка пустая? : " << pile->isEmpty() << std::endl;
 
-            if (!pile->isEmpty()) {
-                int cardIndex = pile->getCardIndexAt(mousePos);
-                std::cout << "Индекс карты: " << cardIndex << std::endl;
+                if (!pile->isEmpty()) {
+                    int cardIndex = pile->getCardIndexAt(mousePos);
+                    std::cout << "Индекс карты: " << cardIndex << std::endl;
 
-                if (cardIndex != -1) {
-                    Card& card = pile->getCardAt(cardIndex);
-                    std::cout << "Карта лицом вверх? : " << card.isFaceUp() << std::endl;
+                    if (cardIndex != -1) {
+                        Card& card = pile->getCardAt(cardIndex);
+                        std::cout << "Карта лицом вверх? : " << card.isFaceUp() << std::endl;
 
-                    if (card.isFaceUp()) {
-                        std::cout << "Начало перетаскивания..." << std::endl;
-                        startDragging(pile, cardIndex);
+                        if (card.isFaceUp()) {
+                            std::cout << "Начало перетаскивания..." << std::endl;
+                            startDragging(pile, cardIndex);
+                        }
                     }
                 }
             }
-        }
-        else {
-            std::cout << "Стопка не найдена" << std::endl;
+            else {
+                std::cout << "Стопка не найдена" << std::endl;
+            }
         }
     }
 }
@@ -151,6 +201,8 @@ void Solitaire::handleMouseMoved(const sf::Event::MouseMoved& event) {
 
 void Solitaire::render() {
     window.clear(sf::Color(0, 100, 0));
+
+    menuBar.draw(window);
 
     game.getStock().draw(window);
 

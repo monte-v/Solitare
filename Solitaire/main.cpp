@@ -9,7 +9,9 @@ int main() {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     SetConsoleOutputCP(1251);
     SetConsoleCP(1251);
-    setlocale(LC_ALL, "Russian");
+    //setlocale(LC_ALL, "Russian");
+
+    std::locale::global(std::locale("Russian_Russia.1251"));
 
     std::cout << "=== ÏÀÑÜßÍÑ ÊÎÑÛÍÊÀ ===" << std::endl;
     std::cout << "Çàïóñê ïðèëîæåíèÿ..." << std::endl;

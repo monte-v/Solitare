@@ -25,6 +25,8 @@ public:
 
     void output() const;
 
+    void clear();
+
     virtual bool canAddCard(const Card& card) const = 0;
     virtual bool canTakeCard() const { return !cards.empty(); }
     virtual bool canTakeCardFrom(int index) const { return false; }

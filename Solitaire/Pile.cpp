@@ -83,6 +83,13 @@ void Pile::output() const {
     }
 }
 
+void Pile::clear() {
+    cards.clear();
+    if (emptyPileSprite) {
+        emptyPileSprite.reset();
+    }
+}
+
 void Pile::addCard(Card card) {
     card.setPosition(getCardPosition(cards.size()));
     cards.push_back(card);

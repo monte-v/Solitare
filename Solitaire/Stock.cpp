@@ -8,7 +8,7 @@ Card Stock::drawCard() {
     }
 
     Card card = removeTopCard();
-    card.setFaceUp(true); 
+    //card.setFaceUp(true); 
     return card;
 }
 

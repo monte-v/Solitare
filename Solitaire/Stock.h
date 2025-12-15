@@ -8,8 +8,8 @@ private:
 public:
     Stock(sf::Vector2f pos);
 
-    bool canAddCard(const Card& card) const override { return true; }
-    bool canTakeCard() const override { return !cards.empty(); }
+    bool canAddCard(const Card& card) const override { return /*true;*/ false; }
+    bool canTakeCard() const override { return /*!cards.empty();*/ false; }
 
     Card drawCard();
     void reset(const std::vector<Card>& newCards);

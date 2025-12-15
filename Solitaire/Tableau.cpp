@@ -80,26 +80,3 @@ std::vector<Card> Tableau::takeCardsFrom(int startIndex) {
     return takenCards;
 }
 
-//bool Tableau::canMoveGroup(int startIndex, const Pile& target) const {
-//    if (!canTakeCardFrom(startIndex)) {
-//        return false;
-//    }
-//
-//    // Проверяем, можно ли положить первую карту группы в целевую стопку
-//    const Card& firstCard = cards[startIndex];
-//
-//    // Если целевая стопка - тоже Tableau
-//    if (auto tableauTarget = dynamic_cast<const Tableau*>(&target)) {
-//        return tableauTarget->canAddCard(firstCard);
-//    }
-//    // Если целевая стопка - Foundation
-//    else if (auto foundationTarget = dynamic_cast<const Foundation*>(&target)) {
-//        // В Foundation можно класть только по одной карте
-//        if (startIndex != cards.size() - 1) {
-//            return false;  // Группу в Foundation нельзя
-//        }
-//        return foundationTarget->canAddCard(firstCard);
-//    }
-//
-//    return false;
-//}

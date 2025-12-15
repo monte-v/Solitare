@@ -14,7 +14,7 @@ bool Solitaire::initialize() {
         return false;
     }
 
-    menuBar.setSize(sf::Vector2f(1200, 35));
+    menuBar.setSize(sf::Vector2f(1000, 35));
     menuBar.setPosition(sf::Vector2f(0, 0));
 
     menuBar.setOnNewGameCallback([this]() {
@@ -31,6 +31,11 @@ bool Solitaire::initialize() {
             std::cerr << "Ошибка: " << e.what() << std::endl;
         }
     });
+
+    menuBar.setOnHelpCallback([this]() {
+        std::cout << "Открыть помощь..." << std::endl;
+        helpWindow.open();
+        });
 
     try {
         game.newGame();
@@ -131,6 +136,9 @@ void Solitaire::processEvents() {
             handleMouseMoved(*mouseMoved);
         }
     }
+    if (helpWindow.isOpen()) {
+        helpWindow.processEvents();
+    }
 }
 
 void Solitaire::handleMousePressed(const sf::Event::MouseButtonPressed& event) {
@@ -166,6 +174,22 @@ void Solitaire::handleMousePressed(const sf::Event::MouseButtonPressed& event) {
             if (pile) {
                 std::cout << "Найдена стопка" << std::endl;
                 std::cout << "Стопка пустая? : " << pile->isEmpty() << std::endl;
+
+                if (dynamic_cast<Stock*>(pile)) {
+                    // ВАРИАНТ 1: Замена карт в Waste
+                    game.drawFromStock();
+
+                    // ВАРИАНТ 2: Если хотите разделить логику
+                    // if (game.getStock().isEmpty()) {
+                    //     // Если Stock пуст - возвращаем карты из Waste
+                    //     game.returnWasteToStock();
+                    // } else {
+                    //     // Иначе - берем 1 карту в Waste
+                    //     game.drawOneCardToWaste();
+                    // }
+
+                    return;
+                }
 
                 if (!pile->isEmpty()) {
                     int cardIndex = pile->getCardIndexAt(mousePos);
@@ -209,6 +233,7 @@ void Solitaire::render() {
     menuBar.draw(window);
 
     game.getStock().draw(window);
+    game.getWaste().draw(window);
 
     for (const auto& tableau : game.getTableaus()) {
         tableau.draw(window);
@@ -225,10 +250,17 @@ void Solitaire::render() {
     }
 
     window.display();
+    if (helpWindow.isOpen()) {
+        helpWindow.render();
+    }
 }
 
 Pile* Solitaire::getPileAt(sf::Vector2f position)
 {
+    if (game.getWaste().contains(position)) {
+        return &const_cast<Waste&>(game.getWaste());
+    }
+
     if (game.getStock().contains(position)) {
         return &const_cast<Stock&>(game.getStock());
     }

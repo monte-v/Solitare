@@ -35,16 +35,28 @@ Foundation& Foundation::operator=(Foundation&& other) noexcept {
 
 bool Foundation::canAddCard(const Card& card) const {
     if (card.getSuit() != suit) {
+        std::cout << "Foundation::canAddCard: неправильная масть!" << std::endl;
         return false;
     }
 
     if (cards.empty()) {
-        return card.getRank() == Rank::Ace;
+        bool canAdd = card.getRank() == Rank::Ace;
+        std::cout << "Foundation::canAddCard: пустая стопка, можно ли добавить туза? " << canAdd << std::endl;
+        return canAdd;
     }
 
     const Card& topCard = getTopCard();
-    return static_cast<int>(card.getRank()) ==
+
+    bool canAdd = static_cast<int>(card.getRank()) ==
         static_cast<int>(topCard.getRank()) + 1;
+
+    std::cout << "Foundation::canAddCard: проверка:" << std::endl;
+    std::cout << "  Верхняя карта: ";
+    topCard.output();
+    std::cout << "  Добавляемая: ";
+    card.output();
+    std::cout << "  Можно добавить? " << canAdd << std::endl;
+    return canAdd;
 }
 
 bool Foundation::isComplete() const {

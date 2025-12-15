@@ -6,6 +6,7 @@
 #include "Tableau.h"
 #include "Foundation.h"
 #include "Stock.h"
+#include "Waste.h"
 
 // —труктура дл€ сохранени€ состо€ни€ хода
 struct MoveRecord {
@@ -19,10 +20,14 @@ class Game {
 private:
     Deck deck;
     Stock stock;
+    Waste waste;
     std::array<Tableau, 7> tableaus;
     std::array<Foundation, 4> foundations;
 
     std::stack<MoveRecord> moveHistory;
+
+    int stockDrawCount;
+    int stockCycleIndex;
 
     bool gameWon;
     int score;
@@ -32,6 +37,11 @@ public:
 
     void newGame();
     bool moveCard(Pile& from, Pile& to, int cardIndex = -1);
+
+    void drawFromStock();
+    void resetStock();
+    bool canDrawFromStock() const;
+    bool canResetStock() const;
 
     void clear();
 
@@ -45,6 +55,7 @@ public:
 
     const Stock& getStock() const { return stock; }
     const auto& getTableaus() const { return tableaus; }
+    const Waste& getWaste() const { return waste; }
     const auto& getFoundations() const { return foundations; }
     int getScore() const { return score; }
 

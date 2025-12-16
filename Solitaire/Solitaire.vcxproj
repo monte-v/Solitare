@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Card.cpp" />
     <ClCompile Include="Deck.cpp" />
     <ClCompile Include="Foundation.cpp" />
@@ -152,11 +153,13 @@
     <ClCompile Include="MenuBar.cpp" />
     <ClCompile Include="Pile.cpp" />
     <ClCompile Include="Solitaire.cpp" />
+    <ClCompile Include="StartMenu.cpp" />
     <ClCompile Include="Stock.cpp" />
     <ClCompile Include="Tableau.cpp" />
     <ClCompile Include="Waste.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Button.h" />
     <ClInclude Include="Card.h" />
     <ClInclude Include="Deck.h" />
     <ClInclude Include="Enums.h" />
@@ -166,6 +169,7 @@
     <ClInclude Include="MenuBar.h" />
     <ClInclude Include="Pile.h" />
     <ClInclude Include="Solitaire.h" />
+    <ClInclude Include="StartMenu.h" />
     <ClInclude Include="Stock.h" />
     <ClInclude Include="Tableau.h" />
     <ClInclude Include="Waste.h" />

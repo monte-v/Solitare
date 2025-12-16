@@ -5,15 +5,6 @@
 
 Game::Game() : stock({ 100, 50 + 35 }), waste({ 220, 50 + 35 }), gameWon(false), score(0), stockDrawCount(3), stockCycleIndex(0) {
     std::cout << "Инициализация стопок" << std::endl;
-    //foundations[0] = Foundation(Suit::Hearts, { 300, 50 });
-    //foundations[1] = Foundation(Suit::Diamonds, { 400, 50 });
-    //foundations[2] = Foundation(Suit::Clubs, { 500, 50 });
-    //foundations[3] = Foundation(Suit::Spades, { 600, 50 });
-
-    //for (int i = 0; i < 7; i++) {
-    //    tableaus[i] = Tableau({ 50.0f + i * 110.0f, 250.0f });
-    //}
-
     foundations[0] = Foundation(Suit::Hearts, { 430, 50 + 35 });
     foundations[1] = Foundation(Suit::Diamonds, { 540, 50 + 35 });
     foundations[2] = Foundation(Suit::Clubs, { 650, 50 + 35 });
@@ -65,8 +56,6 @@ void Game::newGame() {
         Card card = deck.draw();
         stock.addCard(card);
     }
-
-    //stock.revealTopCard();
 
     std::cout << "Сток" << std::endl;
     stock.output();

@@ -3,12 +3,14 @@
 #include <SFML/Window.hpp>
 #include "Game.h"
 #include "MenuBar.h"
+#include "StartMenu.h" 
 #include "HelpWindow.h"
 
 class Solitaire {
 private:
     sf::RenderWindow window;
     Game game;
+    StartMenu startMenu;
     MenuBar menuBar;
     HelpWindow helpWindow;
 
@@ -18,6 +20,8 @@ private:
     bool isDragging;                    // Флаг перетаскивания
     int startDragIndex;
     sf::Vector2f startDragMousePos;
+
+    bool gameStarted;
 public:
     Solitaire();
 
@@ -40,4 +44,6 @@ private:
     void startDragging(Pile* pile, int cardIndex);
     void updateDragging(sf::Vector2f mousePos);
     void stopDragging(sf::Vector2f mousePos);
+
+    void startGame();
 };

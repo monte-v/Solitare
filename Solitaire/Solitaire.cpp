@@ -2,7 +2,7 @@
 #include <iostream>
 
 Solitaire::Solitaire() : window(sf::VideoMode({ 1000, 800 }), "Solitaire"), 
-    sourcePile(nullptr), isDragging(false), startDragMousePos(0, 0) {
+    sourcePile(nullptr), isDragging(false), startDragMousePos(0, 0), gameStarted(false) {
     if (!initialize()) {
         std::cerr << "Не удалось инициализировать приложение" << std::endl;
         window.close();
@@ -37,21 +37,61 @@ bool Solitaire::initialize() {
         helpWindow.open();
         });
 
+    if (!startMenu.initialize("assets/fonts/arial.ttf")) {
+        std::cerr << "Не удалось инициализировать стартовое меню" << std::endl;
+        // Можно продолжить, но меню будет без текста
+    }
+
+
+    startMenu.setOnStart([this]() {
+        std::cout << "Начало игры из стартового меню..." << std::endl;
+        startGame();
+        });
+
+    startMenu.setOnHelp([this]() {
+        std::cout << "Показать помощь из стартового меню..." << std::endl;
+        helpWindow.open();
+        });
+
+    startMenu.setOnExit([this]() {
+        std::cout << "Выход из игры..." << std::endl;
+        window.close();
+        });
+
+    // Сразу показываем стартовое меню
+    startMenu.show();
+
+
+    //try {
+    //    game.newGame();
+    //    std::cout << "Инициализация solitare" << std::endl;
+    //}
+    //catch (const std::exception& e) {
+    //    std::cerr << "Ошибка при создании новой игры: " << e.what() << std::endl;
+    //    return false;
+    //}
+
+    return true;
+}
+
+void Solitaire::startGame() {
     try {
         game.newGame();
-        std::cout << "Инициализация solitare" << std::endl;
+        gameStarted = true;
+        startMenu.hide();
+        std::cout << "Игра начата!" << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "Ошибка при создании новой игры: " << e.what() << std::endl;
-        return false;
     }
-
-    return true;
 }
 
 bool Solitaire::loadResources() {
     std::cout << "Загрузка текстур карт..." << std::endl;
 
+    if (!menuBar.loadFont("assets/fonts/arial.ttf")) {
+        std::cerr << "Шрифт для меню не загружен" << std::endl;
+    }
     if (!menuBar.loadFont("assets/fonts/arial.ttf")) {
         std::cerr << "Шрифт для меню не загружен" << std::endl;
     }
@@ -78,7 +118,7 @@ void Solitaire::run() {
         processEvents();
 
         sf::Time deltaTime = clock.restart();
-        update(deltaTime);
+        //update(deltaTime);
 
         render();
         sf::sleep(sf::milliseconds(16));
@@ -117,23 +157,48 @@ void Solitaire::processEvents() {
             window.close();
         }
         else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+            //sf::Vector2f mousePos = window.mapPixelToCoords(
+            //    sf::Vector2i(mousePressed->position.x, mousePressed->position.y)
+            //);
+
+            //// Проверяем, кликнули ли в MenuBar
+            //if (mousePos.y <= 35) {
+            //    menuBar.handleClick(mousePos);
+            //}
+            //else {
+            //    handleMousePressed(*mousePressed);
+            //}
+
             sf::Vector2f mousePos = window.mapPixelToCoords(
                 sf::Vector2i(mousePressed->position.x, mousePressed->position.y)
             );
 
-            // Проверяем, кликнули ли в MenuBar
-            if (mousePos.y <= 35) {
-                menuBar.handleClick(mousePos);
+            // Если видно стартовое меню
+            if (startMenu.isVisible()) {
+                // Клик в стартовом меню
+                startMenu.handleClick(mousePos);
             }
+            // Игра активна
             else {
-                handleMousePressed(*mousePressed);
+                // Клик в MenuBar
+                if (mousePos.y <= 35) {
+                    menuBar.handleClick(mousePos);
+                }
+                // Клик в игровом поле
+                else {
+                    handleMousePressed(*mousePressed);
+                }
             }
         }
         else if (auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
-            handleMouseReleased(*mouseReleased);
+            if (gameStarted && !startMenu.isVisible() && !helpWindow.isOpen()) {
+                handleMouseReleased(*mouseReleased);
+            }
         }
         else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
-            handleMouseMoved(*mouseMoved);
+            if (gameStarted && isDragging && !startMenu.isVisible() && !helpWindow.isOpen()) {
+                handleMouseMoved(*mouseMoved);
+            }
         }
     }
     if (helpWindow.isOpen()) {
@@ -230,29 +295,60 @@ void Solitaire::handleMouseMoved(const sf::Event::MouseMoved& event) {
 void Solitaire::render() {
     window.clear(sf::Color(0, 100, 0));
 
-    menuBar.draw(window);
+    if (gameStarted) {
+        // Рисуем игровое поле
+        menuBar.draw(window);
+        game.getStock().draw(window);
+        game.getWaste().draw(window);
 
-    game.getStock().draw(window);
-    game.getWaste().draw(window);
+        for (const auto& tableau : game.getTableaus()) {
+            tableau.draw(window);
+        }
 
-    for (const auto& tableau : game.getTableaus()) {
-        tableau.draw(window);
-    }
+        for (const auto& foundation : game.getFoundations()) {
+            foundation.draw(window);
+        }
 
-    for (const auto& foundation : game.getFoundations()) {
-        foundation.draw(window);
-    }
-
-    if (isDragging) {
-        for (auto& card : draggedCards) {
-            card.draw(window);
+        if (isDragging) {
+            for (auto& card : draggedCards) {
+                card.draw(window);
+            }
         }
     }
 
-    window.display();
+    // Рисуем стартовое меню (если видимо) поверх всего
+    startMenu.draw(window);
+
+    // Рисуем окно помощи (если видимо)
     if (helpWindow.isOpen()) {
         helpWindow.render();
     }
+
+    window.display();
+
+    //menuBar.draw(window);
+
+    //game.getStock().draw(window);
+    //game.getWaste().draw(window);
+
+    //for (const auto& tableau : game.getTableaus()) {
+    //    tableau.draw(window);
+    //}
+
+    //for (const auto& foundation : game.getFoundations()) {
+    //    foundation.draw(window);
+    //}
+
+    //if (isDragging) {
+    //    for (auto& card : draggedCards) {
+    //        card.draw(window);
+    //    }
+    //}
+
+    //window.display();
+    //if (helpWindow.isOpen()) {
+    //    helpWindow.render();
+    //}
 }
 
 Pile* Solitaire::getPileAt(sf::Vector2f position)

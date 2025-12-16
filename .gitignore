@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Uml+Diagram.pdf
+/Uml+Diagram1.pdf

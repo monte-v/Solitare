@@ -36,6 +36,8 @@ public:
     Card takeCardAt(int index);
     std::vector<Card> takeCardsFrom(int startIndex);
 
+    float getVerticalSpacing() const { return verticalSpacing; }
+    sf::Vector2f getPosition() const { return position; }
     std::vector<Card>& getCardsRef() { return cards; }
     Card& getTopCard();
     const Card& getTopCard() const;

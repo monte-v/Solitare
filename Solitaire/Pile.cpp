@@ -91,16 +91,14 @@ void Pile::clear() {
 }
 
 void Pile::addCard(Card card) {
-    card.setPosition(getCardPosition(cards.size()));
+    card.setPosition(getCardPosition(static_cast<int>(cards.size())));
     cards.push_back(card);
-
 }
 
 Card Pile::removeTopCard() {
     if (cards.empty()) {
         throw std::runtime_error("Ñòîïêà ïóñòà!");
     }
-
     Card topCard = cards.back();
     cards.pop_back();
     return topCard;
@@ -156,7 +154,7 @@ sf::Vector2f Pile::getCardPosition(int cardIndex) const {
 int Pile::getCardIndexAt(sf::Vector2f point) const {
     if (cards.empty()) return -1;
 
-    for (int i = cards.size() - 1; i >= 0; i--) {
+    for (int i = static_cast<int>(cards.size()) - 1; i >= 0; i--) {
         if (cards[i].contains(point)) {
             return i;
         }
@@ -195,7 +193,7 @@ bool Pile::contains(sf::Vector2f point) const {
     }
 
     // ÏÐÎÂÅÐßÅÌ ÂÑÅ ÊÀÐÒÛ ÑÂÅÐÕÓ ÂÍÈÇ
-    for (int i = cards.size() - 1; i >= 0; i--) {
+    for (int i = static_cast<int>(cards.size()) - 1; i >= 0; i--) {
         if (cards[i].contains(point)) {
             return true;
         }

@@ -11,6 +11,11 @@ MenuBar::MenuBar() : onNewGameCallback(nullptr) {
     newGameButton.setOutlineColor(sf::Color(200, 200, 200));
     newGameButton.setOutlineThickness(2);
 
+    hintButton.setSize(buttonSize); 
+    hintButton.setFillColor(sf::Color::White);
+    hintButton.setOutlineColor(sf::Color(200, 200, 200));
+    hintButton.setOutlineThickness(2);
+
     helpButton.setSize(buttonSize);
     helpButton.setFillColor(sf::Color::White);
     helpButton.setOutlineColor(sf::Color(200, 200, 200));
@@ -33,40 +38,17 @@ bool MenuBar::loadFont(const std::string& fontPath) {
 }
 
 void MenuBar::setPosition(const sf::Vector2f& position) {
-    //background.setPosition(position);
-    //newGameButton.setPosition({ position.x + 10, position.y + 2 });
-
-    //// Создаем или обновляем текст
-    //if (font) {
-    //    // Если optional пустой, создаем новый текст
-    //    if (!newGameText.has_value()) {
-    //        newGameText.emplace(*font);
-    //    }
-    //    else {
-    //        // Если уже существует, просто обновляем шрифт
-    //        newGameText->setFont(*font);
-    //    }
-    //}
-
-    //if (newGameText.has_value()) {
-    //    newGameText->setString("Новая игра");
-    //    newGameText->setCharacterSize(16);
-    //    newGameText->setFillColor(sf::Color::Black);
-    //    newGameText->setPosition({ position.x + 30, position.y + 6 });
-    //}
     background.setPosition(position);
 
-    // Расположение кнопок с отступом 10px
     float x = position.x + 10;
     float y = position.y + 2;
     float spacing = 10;
 
     newGameButton.setPosition({ x, y });
     helpButton.setPosition({ x + 120 + spacing, y });
+    hintButton.setPosition({ x + 240 + spacing * 2, y }); // НОВАЯ КНОПКА
 
-    // Инициализация текстов
     if (font) {
-        // Новая игра
         if (!newGameText.has_value()) {
             newGameText.emplace(*font);
         }
@@ -76,7 +58,6 @@ void MenuBar::setPosition(const sf::Vector2f& position) {
         newGameText->setFillColor(sf::Color::Black);
         newGameText->setPosition({ x + 20, y + 6 });
 
-        // Помощь
         if (!helpText.has_value()) {
             helpText.emplace(*font);
         }
@@ -84,6 +65,14 @@ void MenuBar::setPosition(const sf::Vector2f& position) {
         helpText->setCharacterSize(16);
         helpText->setFillColor(sf::Color::Black);
         helpText->setPosition({ x + 120 + spacing + 30, y + 6 });
+
+        if (!hintText.has_value()) { 
+            hintText.emplace(*font);
+        }
+        hintText->setString("Подсказка");
+        hintText->setCharacterSize(16);
+        hintText->setFillColor(sf::Color::Black);
+        hintText->setPosition({ x + 240 + spacing * 2 + 20, y + 6 });
     }
 }
 
@@ -99,14 +88,14 @@ void MenuBar::setOnHelpCallback(const std::function<void()>& callback) {
     onHelpCallback = callback;
 }
 
+void MenuBar::setOnHintCallback(const std::function<void()>& callback) {
+    onHintCallback = callback;
+}
+
 void MenuBar::handleClick(const sf::Vector2f& mousePos) {
     if (newGameButton.getGlobalBounds().contains(mousePos) && onNewGameCallback) {
-        // Визуальная обратная связь
         newGameButton.setFillColor(sf::Color(240, 240, 240));
         onNewGameCallback();
-
-        // Возвращаем цвет через короткое время (можно сделать через таймер)
-        // Для простоты вернем сразу
         newGameButton.setFillColor(sf::Color::White);
     }
     if (helpButton.getGlobalBounds().contains(mousePos) && onHelpCallback) {
@@ -114,13 +103,20 @@ void MenuBar::handleClick(const sf::Vector2f& mousePos) {
         onHelpCallback();
         helpButton.setFillColor(sf::Color::White);
     }
+    if (hintButton.getGlobalBounds().contains(mousePos) && onHintCallback) { // НОВЫЙ ОБРАБОТЧИК
+        hintButton.setFillColor(sf::Color(240, 240, 240));
+        onHintCallback();
+        hintButton.setFillColor(sf::Color::White);
+    }
 }
 
 void MenuBar::draw(sf::RenderWindow& window) const {
     window.draw(background);
     window.draw(newGameButton);
     window.draw(helpButton);
+    window.draw(hintButton);
 
     if (newGameText) window.draw(*newGameText);
     if (helpText) window.draw(*helpText);
+    if (hintText) window.draw(*hintText);
 }

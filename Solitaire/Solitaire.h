@@ -5,6 +5,7 @@
 #include "MenuBar.h"
 #include "StartMenu.h" 
 #include "HelpWindow.h"
+#include "HighlightEffect.h"
 
 class Solitaire {
 private:
@@ -13,6 +14,7 @@ private:
     StartMenu startMenu;
     MenuBar menuBar;
     HelpWindow helpWindow;
+    HighlightEffect highlightEffect;
 
     std::vector<Card> draggedCards;     // Карты, которые перетаскиваем
     Pile* sourcePile;                   // Откуда взяли карты
@@ -22,6 +24,8 @@ private:
     sf::Vector2f startDragMousePos;
 
     bool gameStarted;
+
+    void findAndShowHint();
 public:
     Solitaire();
 

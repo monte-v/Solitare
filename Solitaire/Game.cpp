@@ -4,7 +4,6 @@
 #include <iostream>
 
 Game::Game() : stock({ 100, 50 + 35 }), waste({ 220, 50 + 35 }), gameWon(false), score(0), stockDrawCount(3), stockCycleIndex(0) {
-    std::cout << "Инициализация стопок" << std::endl;
     foundations[0] = Foundation(Suit::Hearts, { 430, 50 + 35 });
     foundations[1] = Foundation(Suit::Diamonds, { 540, 50 + 35 });
     foundations[2] = Foundation(Suit::Clubs, { 650, 50 + 35 });
@@ -35,11 +34,6 @@ void Game::clear() {
     gameWon = false;
     score = 0;
 
-    // Очищаем историю ходов
-    while (!moveHistory.empty()) {
-        moveHistory.pop();
-    }
-
     std::cout << "Текущая игра очищена" << std::endl;
 }
 
@@ -56,10 +50,6 @@ void Game::newGame() {
         Card card = deck.draw();
         stock.addCard(card);
     }
-
-    std::cout << "Сток" << std::endl;
-    stock.output();
-    std::cout << "Стопки заполнены" << std::endl;
 
     gameWon = false;
     score = 0;

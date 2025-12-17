@@ -1,4 +1,5 @@
 #include "Solitaire.h"
+#include "HighlightEffect.h"
 #include <iostream>
 
 Solitaire::Solitaire() : window(sf::VideoMode({ 1000, 800 }), "Solitaire"), 
@@ -31,17 +32,20 @@ bool Solitaire::initialize() {
             std::cerr << "Ошибка: " << e.what() << std::endl;
         }
     });
-
     menuBar.setOnHelpCallback([this]() {
         std::cout << "Открыть помощь..." << std::endl;
         helpWindow.open();
-        });
+    });
+    menuBar.setOnHintCallback([this]() {
+        if (gameStarted) {
+            findAndShowHint();
+        }
+    });
 
     if (!startMenu.initialize("assets/fonts/arial.ttf")) {
         std::cerr << "Не удалось инициализировать стартовое меню" << std::endl;
         // Можно продолжить, но меню будет без текста
     }
-
 
     startMenu.setOnStart([this]() {
         std::cout << "Начало игры из стартового меню..." << std::endl;
@@ -72,6 +76,106 @@ bool Solitaire::initialize() {
     //}
 
     return true;
+}
+
+void Solitaire::findAndShowHint() {
+    highlightEffect.clear();
+
+    // Проверяем верхние карты во всех стопках
+    std::vector<Pile*> allPiles;
+
+    // Добавляем Waste если есть карты
+    if (!game.getWaste().isEmpty()) {
+        allPiles.push_back(&const_cast<Waste&>(game.getWaste()));
+    }
+
+    // Добавляем Tableaus
+    for (int i = 0; i < 7; i++) {
+        if (!game.getTableaus()[i].isEmpty()) {
+            allPiles.push_back(&const_cast<Tableau&>(game.getTableaus()[i]));
+        }
+    }
+
+    // Для каждой стопки проверяем, куда можно положить ее верхнюю карту
+    for (Pile* sourcePile : allPiles) {
+        if (sourcePile->isEmpty()) continue;
+
+        const Card& sourceCard = sourcePile->getTopCard();
+
+        // Проверяем Foundations
+        for (int i = 0; i < 4; i++) {
+            Foundation& foundation = const_cast<Foundation&>(game.getFoundations()[i]);
+            if (foundation.canAddCard(sourceCard)) {
+                // Подсвечиваем карту-источник и фонд, куда ее можно положить
+                sf::Vector2f sourcePos = sourcePile->getTopCard().getPosition();
+                highlightEffect.addHighlight(sourcePos,
+                    sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+
+                sf::Vector2f targetPos = foundation.getPosition();
+                highlightEffect.addHighlight(targetPos,
+                    sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+
+                return; // Нашли первый возможный ход
+            }
+        }
+
+        // Проверяем Tableaus
+        for (int i = 0; i < 7; i++) {
+            Tableau& tableau = const_cast<Tableau&>(game.getTableaus()[i]);
+            if (&tableau != sourcePile && tableau.canAddCard(sourceCard)) {
+                // Подсвечиваем карту-источник и tableau, куда ее можно положить
+                sf::Vector2f sourcePos = sourcePile->getTopCard().getPosition();
+                highlightEffect.addHighlight(sourcePos,
+                    sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+
+                sf::Vector2f targetPos;
+                if (tableau.isEmpty()) {
+                    targetPos = tableau.getPosition();
+                }
+                else {
+                    // Используем позицию верхней карты и добавляем отступ для следующей
+                    targetPos = tableau.getTopCard().getPosition();
+                    targetPos.y += 25.0f; // Используем фиксированный отступ (как в Tableau конструкторе)
+                }
+                highlightEffect.addHighlight(targetPos,
+                    sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+
+                return; // Нашли первый возможный ход
+            }
+        }
+    }
+
+    // Проверяем пустые Tableaus - можно положить короля
+    for (int i = 0; i < 7; i++) {
+        Tableau& tableau = const_cast<Tableau&>(game.getTableaus()[i]);
+        if (tableau.isEmpty()) {
+            // Ищем короля во всех стопках
+            for (Pile* sourcePile : allPiles) {
+                if (sourcePile->isEmpty()) continue;
+
+                const Card& sourceCard = sourcePile->getTopCard();
+                if (sourceCard.getRank() == Rank::King) {
+                    // Подсвечиваем короля и пустой tableau
+                    sf::Vector2f sourcePos = sourcePile->getTopCard().getPosition();
+                    highlightEffect.addHighlight(sourcePos,
+                        sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+
+                    sf::Vector2f targetPos = tableau.getPosition();
+                    highlightEffect.addHighlight(targetPos,
+                        sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+
+                    return; // Нашли возможный ход
+                }
+            }
+        }
+    }
+
+    // Если не нашли ходов - можно попробовать взять из Stock
+    if (game.canDrawFromStock()) {
+        sf::Vector2f stockPos = game.getStock().getPosition();
+        highlightEffect.addHighlight(stockPos,
+            sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
+    }
 }
 
 void Solitaire::startGame() {
@@ -126,6 +230,7 @@ void Solitaire::run() {
 }
 
 void Solitaire::update(sf::Time deltaTime) {
+    highlightEffect.update(deltaTime);
     //if (game.isGameWon()) {
     //    // Игра выиграна - можно добавить анимацию или эффекты
     //    return;
@@ -308,6 +413,8 @@ void Solitaire::render() {
         for (const auto& foundation : game.getFoundations()) {
             foundation.draw(window);
         }
+
+        highlightEffect.draw(window);
 
         if (isDragging) {
             for (auto& card : draggedCards) {

@@ -6,6 +6,7 @@
 #include "StartMenu.h" 
 #include "HelpWindow.h"
 #include "HighlightEffect.h"
+#include "WinScreen.h"
 
 class Solitaire {
 private:
@@ -14,6 +15,7 @@ private:
     StartMenu startMenu;
     MenuBar menuBar;
     HelpWindow helpWindow;
+    WinScreen winScreen;
     HighlightEffect highlightEffect;
 
     std::vector<Card> draggedCards;     // Карты, которые перетаскиваем
@@ -24,6 +26,7 @@ private:
     sf::Vector2f startDragMousePos;
 
     bool gameStarted;
+    bool gameWon;
 
     void findAndShowHint();
 public:

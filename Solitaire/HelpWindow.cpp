@@ -3,7 +3,7 @@
 
 HelpWindow::HelpWindow() : isOpenFlag(false) {
     // В SFML 3.0 VideoMode создается по-другому
-    window.create(sf::VideoMode({ 600, 500 }), "Помощь - Правила игры Косынка");
+    window.create(sf::VideoMode({ 600, 500 }), "Помощь - Правила игры Косынка", sf::Style::Titlebar | sf::Style::Close);
     window.setVisible(false);  // Сначала скрываем окно
 
     if (!font.openFromFile("assets/fonts/arial.ttf")) {  // openFromFile вместо loadFromFile

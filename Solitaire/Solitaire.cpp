@@ -1,9 +1,8 @@
 #include "Solitaire.h"
-#include "HighlightEffect.h"
 #include <iostream>
 
-Solitaire::Solitaire() : window(sf::VideoMode({ 1000, 800 }), "Solitaire"), 
-    sourcePile(nullptr), isDragging(false), startDragMousePos(0, 0), gameStarted(false) {
+Solitaire::Solitaire() : window(sf::VideoMode({ 1000, 800 }), "Solitaire", sf::Style::Titlebar | sf::Style::Close),
+    sourcePile(nullptr), isDragging(false), startDragMousePos(0, 0), gameStarted(false), highlightEffect(), gameWon(false) {
     if (!initialize()) {
         std::cerr << "Не удалось инициализировать приложение" << std::endl;
         window.close();
@@ -15,6 +14,9 @@ bool Solitaire::initialize() {
         return false;
     }
 
+    winScreen.setSize(1000, 800);
+    winScreen.setPosition(0, 0);
+
     menuBar.setSize(sf::Vector2f(1000, 35));
     menuBar.setPosition(sf::Vector2f(0, 0));
 
@@ -22,7 +24,8 @@ bool Solitaire::initialize() {
         std::cout << "Запуск новой игры через меню..." << std::endl;
         try {
             game.newGame();
-
+            gameWon = false; // Сбрасываем флаг победы
+            winScreen.hide();
             isDragging = false;
             draggedCards.clear();
             sourcePile = nullptr;
@@ -41,11 +44,6 @@ bool Solitaire::initialize() {
             findAndShowHint();
         }
     });
-
-    if (!startMenu.initialize("assets/fonts/arial.ttf")) {
-        std::cerr << "Не удалось инициализировать стартовое меню" << std::endl;
-        // Можно продолжить, но меню будет без текста
-    }
 
     startMenu.setOnStart([this]() {
         std::cout << "Начало игры из стартового меню..." << std::endl;
@@ -133,9 +131,9 @@ void Solitaire::findAndShowHint() {
                     targetPos = tableau.getPosition();
                 }
                 else {
-                    // Используем позицию верхней карты и добавляем отступ для следующей
-                    targetPos = tableau.getTopCard().getPosition();
-                    targetPos.y += 25.0f; // Используем фиксированный отступ (как в Tableau конструкторе)
+                    // Получаем позицию для следующей карты в Tableau
+                    // Нужна позиция для карты с индексом равным текущему количеству карт
+                    targetPos = tableau.getCardPosition(static_cast<int>(tableau.getCardCount()));
                 }
                 highlightEffect.addHighlight(targetPos,
                     sf::Vector2f(Card::WIDTH, Card::HEIGHT), 3.0f);
@@ -193,8 +191,11 @@ void Solitaire::startGame() {
 bool Solitaire::loadResources() {
     std::cout << "Загрузка текстур карт..." << std::endl;
 
-    if (!menuBar.loadFont("assets/fonts/arial.ttf")) {
-        std::cerr << "Шрифт для меню не загружен" << std::endl;
+    if (!startMenu.initialize("assets/fonts/arial.ttf")) {
+        std::cerr << "Не удалось инициализировать стартовое меню" << std::endl;
+    }
+    if (!winScreen.loadFont("assets/fonts/arial.ttf")) {
+        std::cerr << "Шрифт для WinScreen не загружен" << std::endl;
     }
     if (!menuBar.loadFont("assets/fonts/arial.ttf")) {
         std::cerr << "Шрифт для меню не загружен" << std::endl;
@@ -216,13 +217,14 @@ bool Solitaire::loadResources() {
 void Solitaire::run() {
     sf::Clock clock;
 
+
     std::cout << "Игра запущена" << std::endl;
 
     while (window.isOpen()) {
         processEvents();
 
         sf::Time deltaTime = clock.restart();
-        //update(deltaTime);
+        update(deltaTime);
 
         render();
         sf::sleep(sf::milliseconds(16));
@@ -235,26 +237,25 @@ void Solitaire::update(sf::Time deltaTime) {
     //    // Игра выиграна - можно добавить анимацию или эффекты
     //    return;
     //}
+    if (gameStarted && !gameWon && !winScreen.isVisible()) {
+        bool allFoundationsComplete = true;
+        for (int i = 0; i < 4; i++) {
+            if (!game.getFoundations()[i].isComplete()) {
+                allFoundationsComplete = false;
+                break;
+            }
+        }
+
+        if (allFoundationsComplete) {
+            gameWon = true;
+            // Показываем экран победы с временем
+            std::string gameTime = game.getFormattedTime();
+            winScreen.show(gameTime);
+        }
+    }
 }
 
 void Solitaire::processEvents() {
-    /*while (std::optional<sf::Event> event = window.pollEvent()) {
-        if (!event) continue;
-
-        if (event->is<sf::Event::Closed>()) {
-            window.close();
-        }
-        else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-            handleMousePressed(*mousePressed);
-        }
-        else if (auto* mouseReleased = event->getIf<sf::Event::MouseButtonReleased>()) {
-            handleMouseReleased(*mouseReleased);
-        }
-        else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
-            handleMouseMoved(*mouseMoved);
-        }
-    }*/
-
     while (std::optional<sf::Event> event = window.pollEvent()) {
         if (!event) continue;
 
@@ -262,21 +263,18 @@ void Solitaire::processEvents() {
             window.close();
         }
         else if (auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>()) {
-            //sf::Vector2f mousePos = window.mapPixelToCoords(
-            //    sf::Vector2i(mousePressed->position.x, mousePressed->position.y)
-            //);
-
-            //// Проверяем, кликнули ли в MenuBar
-            //if (mousePos.y <= 35) {
-            //    menuBar.handleClick(mousePos);
-            //}
-            //else {
-            //    handleMousePressed(*mousePressed);
-            //}
-
             sf::Vector2f mousePos = window.mapPixelToCoords(
                 sf::Vector2i(mousePressed->position.x, mousePressed->position.y)
             );
+
+            if (winScreen.isVisible()) {
+                if (winScreen.handleClick(mousePos.x, mousePos.y)) {
+                    // Начинаем новую игру при клике
+                    game.newGame();
+                    gameWon = false;
+                    return;
+                }
+            }
 
             // Если видно стартовое меню
             if (startMenu.isVisible()) {
@@ -385,14 +383,14 @@ void Solitaire::handleMousePressed(const sf::Event::MouseButtonPressed& event) {
 
 void Solitaire::handleMouseReleased(const sf::Event::MouseButtonReleased& event) {
     if (event.button == sf::Mouse::Button::Left && isDragging) {
-        sf::Vector2f mousePos = sf::Vector2f(event.position.x, event.position.y);
+        sf::Vector2f mousePos = sf::Vector2f(static_cast<float>(event.position.x), static_cast<float>(event.position.y));
         stopDragging(mousePos);
     }
 }
 
 void Solitaire::handleMouseMoved(const sf::Event::MouseMoved& event) {
     if (isDragging) {
-        sf::Vector2f mousePos = sf::Vector2f(event.position.x, event.position.y);
+        sf::Vector2f mousePos = sf::Vector2f(static_cast<float>(event.position.x), static_cast<float>(event.position.y));
         updateDragging(mousePos);
     }
 }
@@ -413,6 +411,8 @@ void Solitaire::render() {
         for (const auto& foundation : game.getFoundations()) {
             foundation.draw(window);
         }
+
+        winScreen.draw(window);
 
         highlightEffect.draw(window);
 
@@ -522,83 +522,60 @@ Pile* Solitaire::getPileAt(sf::Vector2f position)
 
 void Solitaire::startDragging(Pile* pile, int cardIndex)
 {
-    //if (!pile || cardIndex < 0) return;
+    if (!pile || cardIndex < 0) return;
 
     //std::cout << "=== startDragging ===" << std::endl;
 
-    //draggedCards.clear();
-    //sourcePile = pile;
-    //startDragIndex = cardIndex;  // Если используешь это поле
-
-    //// Получаем текущую позицию мыши
-    //startDragMousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-
-    //std::cout << "Начальная позиция мыши: "
-    //<< startDragMousePos.x << ", " << startDragMousePos.y << std::endl;
-
-    //if (Tableau* tableau = dynamic_cast<Tableau*>(pile)) {
-    //    if (tableau->canTakeCardFrom(cardIndex)) {
-    //        std::cout << "Беру " << (pile->getCardCount() - cardIndex) << " карт" << std::endl;
-    //        for (int i = cardIndex; i < pile->getCardCount(); i++) {
-    //            draggedCards.push_back(pile->getCardAt(i));
-    //        }
-    //    }
-    //}
-    //else {
-    //    draggedCards.push_back(pile->getTopCard());
-    //}
-
-    //if (!draggedCards.empty()) {
-    //    // ВАЖНО: позиция первой карты ДО начала перетаскивания
-    //    sf::Vector2f firstCardPos = draggedCards[0].getPosition();
-    //    std::cout << "Позиция первой карты: "
-    //        << firstCardPos.x << ", " << firstCardPos.y << std::endl;
-
-    //    // Правильное вычисление смещения:
-    //    // Насколько карта смещена относительно курсора
-    //    dragOffset = firstCardPos - startDragMousePos;
-
-    //    std::cout << "dragOffset вычислен: "
-    //        << dragOffset.x << ", " << dragOffset.y << std::endl;
-
-    //    isDragging = true;
-    //}
-
-    //std::cout << "=== конец startDragging ===" << std::endl;
-
-
-    if (!pile || cardIndex < 0) return;
-
-    std::cout << "=== startDragging ===" << std::endl;
+    // Проверяем, можно ли вообще брать карты из этой стопки
+    if (!pile->canTakeCardFrom(cardIndex)) {
+        //std::cout << "Нельзя брать карты из этой стопки!" << std::endl;
+        return;
+    }
 
     draggedCards.clear();
     sourcePile = pile;
     startDragIndex = cardIndex;
 
-    // Получаем текущую позицию мыши
     startDragMousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
     if (Tableau* tableau = dynamic_cast<Tableau*>(pile)) {
         if (tableau->canTakeCardFrom(cardIndex)) {
-            // ВАЖНО: БЕРЕМ КАРТЫ ИЗ СТОПКИ (удаляем их)
             draggedCards = tableau->takeCardsFrom(cardIndex);
-            std::cout << "Взято карт: " << draggedCards.size() << std::endl;
+            //std::cout << "Взято карт: " << draggedCards.size() << std::endl;
+        }
+    }
+    else if (Waste* waste = dynamic_cast<Waste*>(pile)) {
+        // Для Waste можно брать только верхнюю карту
+        if (waste->canTakeCardFrom(cardIndex)) {
+            Card topCard = waste->removeTopCard();
+            draggedCards.push_back(topCard);
+        }
+    }
+    else if (Foundation* foundation = dynamic_cast<Foundation*>(pile)) {
+        // Для Foundation проверяем, можно ли брать
+        if (foundation->canTakeCardFrom(cardIndex)) {
+            Card topCard = foundation->removeTopCard();
+            draggedCards.push_back(topCard);
+        }
+        else {
+            // Если нельзя брать из Foundation, очищаем и выходим
+            sourcePile = nullptr;
+            return;
         }
     }
     else {
-        // Для других стопок берем только верхнюю
-        Card topCard = pile->removeTopCard();  // Удаляем из стопки
-        draggedCards.push_back(topCard);
+        // Для других стопок (Stock и т.д.)
+        if (pile->canTakeCardFrom(cardIndex)) {
+            Card topCard = pile->removeTopCard();
+            draggedCards.push_back(topCard);
+        }
     }
 
     if (!draggedCards.empty()) {
-        // Позиция первой карты ДО начала перетаскивания
         sf::Vector2f firstCardPos = sourcePile->getCardPosition(cardIndex);
 
-        // Вычисляем смещение
         dragOffset = firstCardPos - startDragMousePos;
 
-        // Устанавливаем позицию для перетаскивания
         for (size_t i = 0; i < draggedCards.size(); i++) {
             sf::Vector2f pos = startDragMousePos + dragOffset;
             pos.y += i * 25.0f;
@@ -607,9 +584,6 @@ void Solitaire::startDragging(Pile* pile, int cardIndex)
 
         isDragging = true;
     }
-
-    std::cout << "=== конец startDragging ===" << std::endl;
-
 }
 
 void Solitaire::updateDragging(sf::Vector2f mousePos)
@@ -647,78 +621,6 @@ void Solitaire::updateDragging(sf::Vector2f mousePos)
 
 void Solitaire::stopDragging(sf::Vector2f mousePos)
 {
-    //if (!isDragging || draggedCards.empty()) return;
-
-    //Pile* targetPile = getPileAt(mousePos);
-
-    //bool moveSuccessful = false;
-    //if (targetPile && targetPile != sourcePile) {
-    //    // Проверяем первую карту из перетаскиваемых
-    //    if (targetPile->canAddCard(draggedCards[0])) {
-    //        // Если из Tableau берем несколько карт
-    //        if (Tableau* sourceTableau = dynamic_cast<Tableau*>(sourcePile)) {
-    //            if (Tableau* targetTableau = dynamic_cast<Tableau*>(targetPile)) {
-    //                // Для Tableau в Tableau проверяем возможность
-    //                if (targetTableau->canAddCard(draggedCards[0])) {
-    //                    moveSuccessful = true;
-    //                }
-    //            }
-    //            else if (Foundation* targetFoundation = dynamic_cast<Foundation*>(targetPile)) {
-    //                // В Foundation можно только по одной
-    //                if (draggedCards.size() == 1 && targetFoundation->canAddCard(draggedCards[0])) {
-    //                    moveSuccessful = true;
-    //                }
-    //            }
-    //        }
-    //        else {
-    //            // Из других стопок - только по одной карте
-    //            if (draggedCards.size() == 1 && targetPile->canAddCard(draggedCards[0])) {
-    //                moveSuccessful = true;
-    //            }
-    //        }
-    //    }
-    //}
-
-    //// Выполняем или отменяем перемещение
-    //if (moveSuccessful) {
-    //    // Удаляем карты из исходной стопки
-    //    if (Tableau* sourceTableau = dynamic_cast<Tableau*>(sourcePile)) {
-    //        // Для Tableau удаляем все перетаскиваемые карты
-    //        //int startIndex = sourcePile->getCardIndexAt(draggedCards[0].getPosition());
-    //        //if (startIndex != -1) {
-    //        //    // Удаляем карты из sourcePile
-    //        //    // (нужно реализовать метод takeCardsFrom в Pile)
-    //        //    // Пока просто удаляем верхнюю
-    //        //    sourcePile->removeTopCard();
-    //        //}
-    //        int startIndex = startDragIndex;
-    //        if (startIndex != -1) {
-    //            // Удаляем ВСЕ карты от startIndex до конца
-    //            sourceTableau->takeCardsFrom(startIndex);
-    //        }
-    //    }
-    //    else {
-    //        sourcePile->removeTopCard();
-    //    }
-
-    //    // Добавляем карты в целевую стопку
-    //    for (auto& card : draggedCards) {
-    //        targetPile->addCard(card);
-    //    }
-
-    //    // Открываем новую верхнюю карту в исходной стопке
-    //    if (!sourcePile->isEmpty() && !sourcePile->getTopCard().isFaceUp()) {
-    //        sourcePile->revealTopCard();
-    //    }
-    //}
-
-    //// Сбрасываем состояние перетаскивания
-    //startDragIndex = -1;
-    //draggedCards.clear();
-    //sourcePile = nullptr;
-    //isDragging = false;
-
-
     if (!isDragging || draggedCards.empty()) return;
 
     Pile* targetPile = getPileAt(mousePos);
@@ -726,32 +628,48 @@ void Solitaire::stopDragging(sf::Vector2f mousePos)
     bool moveSuccessful = false;
 
     if (targetPile && targetPile != sourcePile) {
-        if (targetPile->canAddCard(draggedCards[0])) {
-            // Проверяем правила для разных типов стопок...
-            moveSuccessful = true;
+        // Если целевая стопка - Foundation, проверяем можно ли положить только ВЕРХНЮЮ карту
+        if (Foundation* foundation = dynamic_cast<Foundation*>(targetPile)) {
+            // В Foundation можно положить только ОДНУ карту (верхнюю из перетаскиваемых)
+            if (foundation->canAddCard(draggedCards[0])) {
+                // Кладем только первую (верхнюю) карту
+                foundation->addCard(draggedCards[0]);
+                moveSuccessful = true;
+
+                // Остальные карты возвращаем обратно в sourcePile
+                for (size_t i = 1; i < draggedCards.size(); i++) {
+                    sourcePile->addCard(draggedCards[i]);
+                }
+            }
+        }
+        else {
+            // Для Tableau и других стопок проверяем можно ли положить всю группу
+            if (targetPile->canAddCard(draggedCards[0])) {
+                moveSuccessful = true;
+            }
         }
     }
 
-    if (moveSuccessful) {
-        // Карты УЖЕ удалены из sourcePile в startDragging()
-        // Просто добавляем их в целевую стопку
+    if (moveSuccessful && !dynamic_cast<Foundation*>(targetPile)) {
+        // Если перемещение успешно и НЕ в Foundation - добавляем ВСЕ карты
         for (auto& card : draggedCards) {
             targetPile->addCard(card);
         }
-
-        // Открываем новую верхнюю карту в исходной стопке
-        if (!sourcePile->isEmpty() && !sourcePile->getTopCard().isFaceUp()) {
-            sourcePile->revealTopCard();
-        }
     }
-    else {
-        // ВОЗВРАЩАЕМ карты обратно в исходную стопку
+    else if (!moveSuccessful) {
+        // Если перемещение не удалось - возвращаем все карты обратно
         for (auto& card : draggedCards) {
             sourcePile->addCard(card);
         }
     }
 
-    // Сбрасываем состояние
+    // Если перемещение в Foundation было успешным, мы уже обработали карты выше
+    // Не нужно их обрабатывать здесь снова
+
+    if (!sourcePile->isEmpty() && !sourcePile->getTopCard().isFaceUp()) {
+        sourcePile->revealTopCard();
+    }
+
     startDragIndex = -1;
     draggedCards.clear();
     sourcePile = nullptr;

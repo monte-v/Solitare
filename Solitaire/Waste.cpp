@@ -8,7 +8,7 @@ bool Waste::canAddCard(const Card& card) const {
     // ¬ Waste можно добавл€ть только из Stock
     //  арты из других стопок нельз€ класть в Waste
     // (это провер€етс€ на уровне Game)
-    return true;
+    return false;
 }
 
 bool Waste::canTakeCardFrom(int index) const {

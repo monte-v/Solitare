@@ -37,7 +37,7 @@ bool WinScreen::loadFont(const std::string& fontPath) {
     }
     timeText->setCharacterSize(36);
     timeText->setFillColor(sf::Color::White);
-             
+
     if (!clickText.has_value()) {
         clickText.emplace(*font);
     }
@@ -133,3 +133,4 @@ void WinScreen::draw(sf::RenderWindow& window) const {
     window.draw(*timeText);
     window.draw(*clickText);
 }
+

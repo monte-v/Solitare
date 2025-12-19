@@ -13,6 +13,10 @@ private:
 public:
     HelpWindow();
 
+    bool initialize();
+    bool loadResources();
+    bool loadIcon(std::string path);
+
     void open();
     void close();
     bool isOpen() const { return isOpenFlag; }

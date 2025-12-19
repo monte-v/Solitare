@@ -7,6 +7,7 @@
 #include "HelpWindow.h"
 #include "HighlightEffect.h"
 #include "WinScreen.h"
+#include "RecordsManager.h"
 
 class Solitaire {
 private:
@@ -17,11 +18,12 @@ private:
     HelpWindow helpWindow;
     WinScreen winScreen;
     HighlightEffect highlightEffect;
+    RecordsManager recordsManager;
 
-    std::vector<Card> draggedCards;     // Карты, которые перетаскиваем
-    Pile* sourcePile;                   // Откуда взяли карты
-    sf::Vector2f dragOffset;            // Смещение от курсора
-    bool isDragging;                    // Флаг перетаскивания
+    std::vector<Card> draggedCards;     
+    Pile* sourcePile;                   
+    sf::Vector2f dragOffset;           
+    bool isDragging;                    
     int startDragIndex;
     sf::Vector2f startDragMousePos;
 
@@ -38,6 +40,7 @@ public:
 
 private:
     bool initialize();
+    bool loadIcon(std::string path);
     bool loadResources();
 
     void processEvents();
@@ -53,4 +56,5 @@ private:
     void stopDragging(sf::Vector2f mousePos);
 
     void startGame();
+    void checkAndAddRecord();
 };

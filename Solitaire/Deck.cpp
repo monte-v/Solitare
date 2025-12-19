@@ -30,7 +30,7 @@ void Deck::shuffle() {
 
 Card Deck::draw() {
     if (cards.empty()) {
-        throw std::runtime_error("Deck is empty");
+        throw std::runtime_error("Колода пуста");
     }
     Card card = cards.back();
     cards.pop_back();

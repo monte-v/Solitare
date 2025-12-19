@@ -3,13 +3,13 @@
 
 class Stock : public Pile {
 private:
-    bool wasteMode;  // Режим "отходов" (в косынке обычно 3 карты)
+    bool wasteMode;  
 
 public:
     Stock(sf::Vector2f pos);
 
-    bool canAddCard(const Card& card) const override { return /*true;*/ false; }
-    bool canTakeCard() const override { return /*!cards.empty();*/ false; }
+    bool canAddCard(const Card& card) const override { return false; }
+    bool canTakeCard() const override { return false; }
 
     Card drawCard();
     void reset(const std::vector<Card>& newCards);

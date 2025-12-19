@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <memory>
-#include <cstdint> // Для uint8_t
+#include <cstdint> 
 
 class HighlightEffect {
 private:

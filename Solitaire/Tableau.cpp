@@ -19,7 +19,6 @@ Tableau& Tableau::operator=(Tableau&& other) noexcept {
 
 bool Tableau::canAddCard(const Card& card) const {
     if (cards.empty()) {
-        // В пустую Tableau можно положить только короля
         return card.getRank() == Rank::King;
     }
 
@@ -30,41 +29,16 @@ bool Tableau::canAddCard(const Card& card) const {
 }
 
 bool Tableau::canTakeCardFrom(int index) const {
-    //if (index < 0 || index >= cards.size()) {
-    //    return false;
-    //}
-
-    //for (int i = index; i < cards.size(); i++) {
-    //    if (!cards[i].isFaceUp()) {
-    //        return false;
-    //    }
-    //}
-    //return true;
-
-
     if (index < 0 || index >= cards.size()) {
         return false;
     }
 
-    std::cout << "=== Tableau::canTakeCardFrom(" << index << ") ===" << std::endl;
-    std::cout << "Всего карт: " << cards.size() << std::endl;
-
-    for (int i = 0; i < cards.size(); i++) {
-        std::cout << "Карта " << i << ": ";
-        cards[i].output();  // или просто: cards[i].isFaceUp() ? "открыта" : "закрыта"
-        std::cout << " - " << (cards[i].isFaceUp() ? "открыта" : "закрыта") << std::endl;
-    }
-
-    std::cout << "Проверяю карты с индекса " << index << ":" << std::endl;
-    for (int i = index; i < cards.size(); i++) {
-        std::cout << "  Карта " << i << ": " << (cards[i].isFaceUp() ? "открыта" : "закрыта") << std::endl;
+    for (int i = index; i < cards.size(); i++) {      
         if (!cards[i].isFaceUp()) {
-            std::cout << "  НЕЛЬЗЯ взять - карта " << i << " закрыта!" << std::endl;
             return false;
         }
     }
 
-    std::cout << "МОЖНО взять карты с индекса " << index << std::endl;
     return true;
 }
 

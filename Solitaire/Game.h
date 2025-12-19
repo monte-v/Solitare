@@ -16,9 +16,9 @@ private:
     std::array<Tableau, 7> tableaus;
     std::array<Foundation, 4> foundations;
 
-    sf::Clock gameClock; // Таймер игры
-    sf::Time gameTime;   // Общее время игры
-    bool isGameActive;   // Активна ли игра
+    sf::Clock gameClock; 
+    sf::Time gameTime;   
+    bool isGameActive;   
     bool timerRunning;
 
     std::mt19937 rng;
@@ -44,6 +44,7 @@ public:
     void pauseTimer();
     void resumeTimer();
     sf::Time getGameTime() const;
+    std::string getFormattedTimeWithMs() const;
     std::string getFormattedTime() const;
 
     void clear();

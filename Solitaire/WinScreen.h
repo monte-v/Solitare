@@ -7,7 +7,7 @@ private:
     sf::RectangleShape background;
     sf::RectangleShape panel;
 
-    sf::Font* font;
+    std::shared_ptr<sf::Font> font;
     std::optional<sf::Text> winText;
     std::optional<sf::Text> timeText;
     std::optional<sf::Text> clickText;
@@ -16,7 +16,6 @@ private:
 
 public:
     WinScreen();
-    ~WinScreen();
 
     bool loadFont(const std::string& fontPath);
     void show(const std::string& time);

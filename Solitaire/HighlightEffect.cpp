@@ -3,7 +3,7 @@
 
 HighlightEffect::HighlightEffect() {
     highlightColor = sf::Color::Yellow;
-    highlightColor.a = 150; // Полупрозрачный
+    highlightColor.a = 150; 
 }
 
 void HighlightEffect::addHighlight(const sf::Vector2f& position, const sf::Vector2f& size, float durationSeconds) {
@@ -24,7 +24,6 @@ void HighlightEffect::update(sf::Time deltaTime) {
     for (size_t i = 0; i < highlights.size();) {
         highlights[i].elapsed += deltaTime;
 
-        // Плавное исчезновение
         float progress = highlights[i].elapsed.asSeconds() / highlights[i].duration.asSeconds();
         progress = std::min(1.0f, progress);
 

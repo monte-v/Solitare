@@ -5,6 +5,7 @@ std::array<std::shared_ptr<sf::Texture>, 4> Foundation::suitTextures = {
 };
 
 Foundation::Foundation() : Foundation(Suit::Hearts, { 0, 0 }) {}
+
 Foundation::Foundation(Suit s, sf::Vector2f pos)
     : Pile(pos, 0.0f), suit(s) {
 } 
@@ -35,13 +36,11 @@ Foundation& Foundation::operator=(Foundation&& other) noexcept {
 
 bool Foundation::canAddCard(const Card& card) const {
     if (card.getSuit() != suit) {
-        std::cout << "Foundation::canAddCard: неправильная масть!" << std::endl;
         return false;
     }
 
     if (cards.empty()) {
         bool canAdd = card.getRank() == Rank::Ace;
-        std::cout << "Foundation::canAddCard: пустая стопка, можно ли добавить туза? " << canAdd << std::endl;
         return canAdd;
     }
 
@@ -50,12 +49,6 @@ bool Foundation::canAddCard(const Card& card) const {
     bool canAdd = static_cast<int>(card.getRank()) ==
         static_cast<int>(topCard.getRank()) + 1;
 
-    std::cout << "Foundation::canAddCard: проверка:" << std::endl;
-    std::cout << "  Верхняя карта: ";
-    topCard.output();
-    std::cout << "  Добавляемая: ";
-    card.output();
-    std::cout << "  Можно добавить? " << canAdd << std::endl;
     return canAdd;
 }
 
@@ -64,7 +57,6 @@ bool Foundation::isComplete() const {
 }
 
 bool Foundation::loadTextures(const std::string& basePath) {
-    // Имена файлов для каждой масти
     std::array<std::string, 4> fileNames = {
         "Hearts.png", "Diamonds.png", "Clubs.png", "Spades.png"
     };
@@ -76,10 +68,10 @@ bool Foundation::loadTextures(const std::string& basePath) {
             std::string fullPath = basePath + fileNames[i];
             suitTextures[i] = std::make_shared<sf::Texture>();
 
-            if (suitTextures[i]->loadFromFile(fullPath)) {
-                std::cout << "Текстура " << fileNames[i] << " загружена" << std::endl;
-            }
-            else {
+            if (!suitTextures[i]->loadFromFile(fullPath)) {
+            //    std::cout << "Текстура " << fileNames[i] << " загружена" << std::endl;
+            //}
+            //else {
                 std::cerr << "Ошибка загрузки: " << fullPath << std::endl;
                 suitTextures[i].reset();
                 allLoaded = false;
@@ -91,10 +83,8 @@ bool Foundation::loadTextures(const std::string& basePath) {
 }
 
 void Foundation::draw(sf::RenderTarget& target) const {
-    // Рисуем базовую стопку
     Pile::draw(target);
 
-    // Рисуем текстуру масти поверх (если пустая и текстура загружена)
     if (cards.empty()) {
         int suitIndex = static_cast<int>(suit);
 
@@ -102,7 +92,6 @@ void Foundation::draw(sf::RenderTarget& target) const {
             sf::Sprite suitSprite(*suitTextures[suitIndex]);
             suitSprite.setPosition(position);
 
-            // Масштабирование
             sf::Vector2u texSize = suitTextures[suitIndex]->getSize();
             if (texSize.x > 0 && texSize.y > 0) {
                 suitSprite.setScale(sf::Vector2f(

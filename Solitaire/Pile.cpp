@@ -50,7 +50,6 @@ bool Pile::loadEmptyPileTexture(const std::string& path)
 
     emptyPileTexture = std::make_shared<sf::Texture>();
     if (emptyPileTexture->loadFromFile(path)) {
-        std::cout << "Текстура пустой стопки загружена: " << path << std::endl;
         return true;
     }
     else {
@@ -143,14 +142,12 @@ int Pile::getFaceUpCount() const {
     return count;
 }
 
-// Позиция карты в стопке для отрисовки
 sf::Vector2f Pile::getCardPosition(int cardIndex) const {
     float x = position.x;
     float y = position.y + (cardIndex * verticalSpacing);
     return sf::Vector2f(x, y);
 }
 
-// Найти индекс карты по координатам
 int Pile::getCardIndexAt(sf::Vector2f point) const {
     if (cards.empty()) return -1;
 
@@ -162,24 +159,8 @@ int Pile::getCardIndexAt(sf::Vector2f point) const {
     return -1;  
 }
 
-// Проверка попадания в границы стопки
 bool Pile::contains(sf::Vector2f point) const {
-    /*if (cards.empty()) {
-        if (emptyPileTexture) {
-            const_cast<Pile*>(this)->initEmptyPileSprite();
-            if (emptyPileSprite) {
-                return emptyPileSprite->getGlobalBounds().contains(point);
-            }
-        }
-
-        sf::FloatRect bounds(position,
-            sf::Vector2f(Card::WIDTH, Card::HEIGHT));
-        return bounds.contains(point);
-    }
-    return cards.back().contains(point);*/
-
     if (cards.empty()) {
-        // Для пустой стопки
         if (emptyPileTexture) {
             const_cast<Pile*>(this)->initEmptyPileSprite();
             if (emptyPileSprite) {
@@ -192,7 +173,6 @@ bool Pile::contains(sf::Vector2f point) const {
         return bounds.contains(point);
     }
 
-    // ПРОВЕРЯЕМ ВСЕ КАРТЫ СВЕРХУ ВНИЗ
     for (int i = static_cast<int>(cards.size()) - 1; i >= 0; i--) {
         if (cards[i].contains(point)) {
             return true;
@@ -202,10 +182,8 @@ bool Pile::contains(sf::Vector2f point) const {
     return false;
 }
 
-// Открыть верхнюю карту
 void Pile::revealTopCard() {
     if (!cards.empty() && !cards.back().isFaceUp()) {
-        std::cout << "Стопка не пуста и последняя карта рубашкой вверх" << std::endl;
         cards.back().setFaceUp(true);
     }
 }

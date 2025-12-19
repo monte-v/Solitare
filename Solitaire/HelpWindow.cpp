@@ -2,15 +2,44 @@
 #include <iostream>
 
 HelpWindow::HelpWindow() : isOpenFlag(false) {
-    // В SFML 3.0 VideoMode создается по-другому
-    window.create(sf::VideoMode({ 600, 500 }), "Помощь - Правила игры Косынка", sf::Style::Titlebar | sf::Style::Close);
-    window.setVisible(false);  // Сначала скрываем окно
+    window.create(sf::VideoMode({ 600, 500 }), "Правила игры Косынка", sf::Style::Titlebar | sf::Style::Close);
+    window.setVisible(false);  
 
-    if (!font.openFromFile("assets/fonts/arial.ttf")) {  // openFromFile вместо loadFromFile
+    if (!initialize()) {
+        std::cerr << "Не удалось инициализировать правила игры" << std::endl;
+        window.close();
+    }  
+}
+
+bool HelpWindow::initialize() {
+    if (!loadResources()) {
+        return false;
+    }
+    return true;
+}
+
+bool HelpWindow::loadResources() {
+    if (!loadIcon("assets/icon.png")) {
+        std::cerr << "Используется стандартная иконка окна" << std::endl;
+        return false;
+    }
+    if (!font.openFromFile("assets/fonts/arial.ttf")) {
         std::cerr << "Ошибка загрузки шрифта для окна помощи" << std::endl;
+        return false;
+    }
+    initializeText();
+    return true;
+}
+
+bool HelpWindow::loadIcon(std::string path) {
+    sf::Image icon;
+
+    if (icon.loadFromFile(path)) {
+        window.setIcon(icon);
+        return true;
     }
 
-    initializeText();
+    return false;
 }
 
 void HelpWindow::initializeText() {
@@ -51,11 +80,9 @@ void HelpWindow::close() {
 }
 
 void HelpWindow::processEvents() {
-    // В SFML 3.0 используется std::optional для событий
     while (std::optional<sf::Event> event = window.pollEvent()) {
         if (!event) continue;
 
-        // Проверяем тип события
         if (event->is<sf::Event::Closed>()) {
             close();
         }
@@ -67,16 +94,14 @@ void HelpWindow::render() {
 
     window.clear(sf::Color(240, 240, 240));
 
-    // Заголовок - в SFML 3.0 конструктор sf::Text принимает строку и шрифт
     sf::Text title(font);
-    title.setFont(font);  // Сначала устанавливаем шрифт
-    title.setString("Помощь - Правила игры Косынка");
+    title.setFont(font); 
+    title.setString("Правила игры Косынка");
     title.setCharacterSize(24);
     title.setFillColor(sf::Color::Blue);
-    title.setPosition({ 50.0f, 20.0f });  // Явно указываем float
+    title.setPosition({ 50.0f, 20.0f });  
     window.draw(title);
 
-    // Основной текст
     float y = 70.0f;
     for (const auto& line : helpText) {
         sf::Text text(font);

@@ -5,17 +5,14 @@
 
 class MenuBar {
 private:
-    sf::RectangleShape background;
+    std::shared_ptr<sf::Font> font;
 
-    sf::RectangleShape newGameButton;
-    sf::RectangleShape helpButton;
+    sf::RectangleShape background;
     sf::RectangleShape hintButton;
 
     std::optional<sf::Text> newGameText;  
     std::optional<sf::Text> helpText;
     std::optional<sf::Text> hintText;
-
-    std::shared_ptr<sf::Font> font;
 
     std::function<void()> onNewGameCallback;
     std::function<void()> onHelpCallback;
@@ -28,8 +25,6 @@ public:
     void setPosition(const sf::Vector2f& position);
     void setSize(const sf::Vector2f& size);
 
-    void setOnNewGameCallback(const std::function<void()>& callback);
-    void setOnHelpCallback(const std::function<void()>& callback);
     void setOnHintCallback(const std::function<void()>& callback);
 
     void handleClick(const sf::Vector2f& mousePos);

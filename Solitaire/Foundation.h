@@ -24,7 +24,4 @@ public:
 
     static bool loadTextures(const std::string& basePath);
     void draw(sf::RenderTarget& target) const override;
-
-private:
-    //void updateLayout() override;  // Карты лежат вплотную
 };

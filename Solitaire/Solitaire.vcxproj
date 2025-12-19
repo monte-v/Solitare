@@ -80,7 +80,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Engineer\2y\Programming\Solitaire\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-system-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -99,7 +99,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Engineer\2y\Programming\Solitaire\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-system-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -116,7 +116,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Engineer\2y\Programming\Solitaire\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-system-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -135,7 +135,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Engineer\2y\Programming\Solitaire\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-system-d.lib;sfml-network-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -153,6 +153,8 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MenuBar.cpp" />
     <ClCompile Include="Pile.cpp" />
+    <ClCompile Include="RecordsManager.cpp" />
+    <ClCompile Include="RecordsTable.cpp" />
     <ClCompile Include="Solitaire.cpp" />
     <ClCompile Include="StartMenu.cpp" />
     <ClCompile Include="Stock.cpp" />
@@ -171,6 +173,8 @@
     <ClInclude Include="HighlightEffect.h" />
     <ClInclude Include="MenuBar.h" />
     <ClInclude Include="Pile.h" />
+    <ClInclude Include="RecordsManager.h" />
+    <ClInclude Include="RecordsTable.h" />
     <ClInclude Include="Solitaire.h" />
     <ClInclude Include="StartMenu.h" />
     <ClInclude Include="Stock.h" />

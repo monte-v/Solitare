@@ -1,37 +1,22 @@
 #include "MenuBar.h"
 #include <iostream>
 
-MenuBar::MenuBar() : onNewGameCallback(nullptr) {
+MenuBar::MenuBar() {
     background.setFillColor(sf::Color::White);
 
     sf::Vector2f buttonSize(120, 30);
 
-    newGameButton.setSize(buttonSize);
-    newGameButton.setFillColor(sf::Color::White);
-    newGameButton.setOutlineColor(sf::Color(200, 200, 200));
-    newGameButton.setOutlineThickness(2);
-
-    hintButton.setSize(buttonSize); 
+    hintButton.setSize(buttonSize);
     hintButton.setFillColor(sf::Color::White);
     hintButton.setOutlineColor(sf::Color(200, 200, 200));
     hintButton.setOutlineThickness(2);
-
-    helpButton.setSize(buttonSize);
-    helpButton.setFillColor(sf::Color::White);
-    helpButton.setOutlineColor(sf::Color(200, 200, 200));
-    helpButton.setOutlineThickness(2);
 
     font = std::make_shared<sf::Font>();
 }
 
 bool MenuBar::loadFont(const std::string& fontPath) {
-    std::string path = fontPath;
-    if (path.empty()) {
-        path = "assets/fonts/arial.ttf";
-    }
-
-    if (!font->openFromFile(path)) {
-        std::cerr << "Ошибка загрузки шрифта для меню: " << path << std::endl;
+    if (!font->openFromFile(fontPath)) {
+        std::cerr << "Ошибка загрузки шрифта для меню: " << fontPath << std::endl;
         return false;
     }
     return true;
@@ -40,39 +25,25 @@ bool MenuBar::loadFont(const std::string& fontPath) {
 void MenuBar::setPosition(const sf::Vector2f& position) {
     background.setPosition(position);
 
-    float x = position.x + 10;
-    float y = position.y + 2;
-    float spacing = 10;
+    float panelWidth = background.getSize().x;
+    float buttonWidth = hintButton.getSize().x;
+    float x = position.x + (panelWidth - buttonWidth) / 2.0f;
+    float y = position.y + 2.0f;
 
-    newGameButton.setPosition({ x, y });
-    helpButton.setPosition({ x + 120 + spacing, y });
-    hintButton.setPosition({ x + 240 + spacing * 2, y }); // НОВАЯ КНОПКА
+    hintButton.setPosition({ x, y });
 
     if (font) {
-        if (!newGameText.has_value()) {
-            newGameText.emplace(*font);
-        }
-
-        newGameText->setString("Новая игра");
-        newGameText->setCharacterSize(16);
-        newGameText->setFillColor(sf::Color::Black);
-        newGameText->setPosition({ x + 20, y + 6 });
-
-        if (!helpText.has_value()) {
-            helpText.emplace(*font);
-        }
-        helpText->setString("Помощь");
-        helpText->setCharacterSize(16);
-        helpText->setFillColor(sf::Color::Black);
-        helpText->setPosition({ x + 120 + spacing + 30, y + 6 });
-
-        if (!hintText.has_value()) { 
+        if (!hintText.has_value()) {
             hintText.emplace(*font);
         }
         hintText->setString("Подсказка");
         hintText->setCharacterSize(16);
         hintText->setFillColor(sf::Color::Black);
-        hintText->setPosition({ x + 240 + spacing * 2 + 20, y + 6 });
+
+        sf::FloatRect textBounds = hintText->getLocalBounds();
+        float textX = x + (buttonWidth - textBounds.size.x) / 2.0f;
+        float textY = y + (30 - textBounds.size.y) / 2.0f - 2.0f;
+        hintText->setPosition({ textX, textY });
     }
 }
 
@@ -80,43 +51,25 @@ void MenuBar::setSize(const sf::Vector2f& size) {
     background.setSize(size);
 }
 
-void MenuBar::setOnNewGameCallback(const std::function<void()>& callback) {
-    onNewGameCallback = callback;
-}
-
-void MenuBar::setOnHelpCallback(const std::function<void()>& callback) {
-    onHelpCallback = callback;
-}
-
 void MenuBar::setOnHintCallback(const std::function<void()>& callback) {
     onHintCallback = callback;
 }
 
 void MenuBar::handleClick(const sf::Vector2f& mousePos) {
-    if (newGameButton.getGlobalBounds().contains(mousePos) && onNewGameCallback) {
-        newGameButton.setFillColor(sf::Color(240, 240, 240));
-        onNewGameCallback();
-        newGameButton.setFillColor(sf::Color::White);
-    }
-    if (helpButton.getGlobalBounds().contains(mousePos) && onHelpCallback) {
-        helpButton.setFillColor(sf::Color(240, 240, 240));
-        onHelpCallback();
-        helpButton.setFillColor(sf::Color::White);
-    }
-    if (hintButton.getGlobalBounds().contains(mousePos) && onHintCallback) { // НОВЫЙ ОБРАБОТЧИК
+    if (hintButton.getGlobalBounds().contains(mousePos) && onHintCallback) {
         hintButton.setFillColor(sf::Color(240, 240, 240));
+
         onHintCallback();
+
         hintButton.setFillColor(sf::Color::White);
     }
 }
 
 void MenuBar::draw(sf::RenderWindow& window) const {
     window.draw(background);
-    window.draw(newGameButton);
-    window.draw(helpButton);
     window.draw(hintButton);
 
-    if (newGameText) window.draw(*newGameText);
-    if (helpText) window.draw(*helpText);
-    if (hintText) window.draw(*hintText);
+    if (hintText.has_value()) {
+        window.draw(*hintText);
+    }
 }

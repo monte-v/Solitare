@@ -55,8 +55,6 @@ Card::Card(const Card& other) noexcept
         sprite->setPosition(other.sprite->getPosition());
         sprite->setScale(other.sprite->getScale());
     }
-
-    std::cout << "Вызван конструктор копирования Card" << std::endl;
 }
 
 Card& Card::operator=(const Card& other) noexcept  {
@@ -82,8 +80,6 @@ Card& Card::operator=(const Card& other) noexcept  {
             sprite = nullptr;
         }
     }
-
-    std::cout << "Вызван оператор присваивания Card" << std::endl;
     return *this;
 }
 
@@ -158,7 +154,6 @@ bool Card::loadFrontTexture() {
     auto texture = std::make_shared<sf::Texture>();
     if (texture->loadFromFile(fullPath)) {
         frontTextureCache[key] = texture;
-        std::cout << "Загружена текстура: " << fileName << std::endl;
         return true;
     }
     else {
@@ -174,7 +169,6 @@ bool Card::loadBackTexture(const std::string& backPath) {
 
     backTexture = std::make_shared<sf::Texture>();
     if (backTexture->loadFromFile(backPath)) {
-        std::cout << "Рубашка загружена: " << backPath << std::endl;
         return true;
     }
     else {
@@ -275,15 +269,10 @@ void Card::draw(sf::RenderTarget& target) const {
     if (sprite) {
         target.draw(*sprite);
     }
-    else {
-        std::cout << "  ВНИМАНИЕ: Карта без спрайта!" << std::endl;
-    }
 }
 
 bool Card::contains(sf::Vector2f point) const {
     if (!sprite) return false;
     return sprite->getGlobalBounds().contains(point);
-
-
 }
 

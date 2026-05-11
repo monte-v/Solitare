@@ -5,6 +5,7 @@
 
 <p align="center">
   <img width="500" alt="Скриншот игры Пасьянс Косынка" src="https://github.com/user-attachments/assets/0c2824fc-1ec9-4603-8f4e-b4a581d4b3dc" />
+  <img width="500" alt="Скриншот игры Пасьянс Косынка" src="https://github.com/user-attachments/assets/aace591d-31d6-4402-9a5c-253f6103c978" />
 </p>
 
 

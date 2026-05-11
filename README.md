@@ -6,6 +6,8 @@
 <p align="center">
   <img width="500" alt="Скриншот игры Пасьянс Косынка" src="https://github.com/user-attachments/assets/0c2824fc-1ec9-4603-8f4e-b4a581d4b3dc" />
   <img width="500" alt="Скриншот игры Пасьянс Косынка" src="https://github.com/user-attachments/assets/aace591d-31d6-4402-9a5c-253f6103c978" />
+  <img width="500" alt="Скриншот игры Пасьянс Косынка" src="https://github.com/user-attachments/assets/ef36479f-8890-49db-8591-58b5d8548b91" />
+  <img width="500" alt="Скриншот игры Пасьянс Косынка" src="https://github.com/user-attachments/assets/83dd4f59-26b7-4121-b493-8ea1967bf8f3" />
 </p>
 
 
